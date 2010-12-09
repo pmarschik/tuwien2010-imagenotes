@@ -29,121 +29,119 @@ import com.google.gwt.user.client.ui.UIObject;
 
 /**
  * The entry point for the Sticky application.
- *
  */
 public class Main extends RetryTimer implements EntryPoint, Model.LoadObserver,
-    Model.StatusObserver {
+        Model.StatusObserver {
 
-  /**
-   * An aggregated image bundle will auto-sprite all the images in the
-   * application.
-   */
-  public interface Images extends HeaderView.Images {
-  }
-
-  /**
-   * Provides Ui to notify the user of model based events. These include tasks
-   * (like loading a surface) and also errors (like lost communication to the
-   * server).
-   */
-  private static class StatusView extends SimplePanel {
-    private final DivElement taskStatusElement;
-
-    private final DivElement errorStatusElement;
-
-    public StatusView() {
-      final Document document = Document.get();
-      final Element element = getElement();
-      taskStatusElement = element.appendChild(document.createDivElement());
-      errorStatusElement = element.appendChild(document.createDivElement());
-      errorStatusElement.setInnerText("No response from server");
-
-      setStyleName("status-view");
-      taskStatusElement.setClassName("status-view-task");
-      errorStatusElement.setClassName("status-view-error");
-
-      hideErrorStatus();
-      hideTaskStatus();
+    /**
+     * An aggregated image bundle will auto-sprite all the images in the
+     * application.
+     */
+    public interface Images extends HeaderView.Images {
     }
 
     /**
-     * Hides the Ui for server communication lost errors.
+     * Provides Ui to notify the user of model based events. These include tasks
+     * (like loading a surface) and also errors (like lost communication to the
+     * server).
      */
-    public void hideErrorStatus() {
-      UIObject.setVisible(errorStatusElement, false);
+    private static class StatusView extends SimplePanel {
+        private final DivElement taskStatusElement;
+
+        private final DivElement errorStatusElement;
+
+        public StatusView() {
+            final Document document = Document.get();
+            final Element element = getElement();
+            taskStatusElement = element.appendChild(document.createDivElement());
+            errorStatusElement = element.appendChild(document.createDivElement());
+            errorStatusElement.setInnerText("No response from server");
+
+            setStyleName("status-view");
+            taskStatusElement.setClassName("status-view-task");
+            errorStatusElement.setClassName("status-view-error");
+
+            hideErrorStatus();
+            hideTaskStatus();
+        }
+
+        /**
+         * Hides the Ui for server communication lost errors.
+         */
+        public void hideErrorStatus() {
+            UIObject.setVisible(errorStatusElement, false);
+        }
+
+        /**
+         * Hides the task status Ui.
+         */
+        public void hideTaskStatus() {
+            UIObject.setVisible(taskStatusElement, false);
+        }
+
+        /**
+         * Displays the Ui for server communication lost errors.
+         */
+        public void showErrorStatus() {
+            UIObject.setVisible(errorStatusElement, true);
+        }
+
+        /**
+         * Displays the the Ui for a task status.
+         *
+         * @param text the text to be displayed
+         */
+        public void showTaskStatus(String text) {
+            taskStatusElement.setInnerText(text);
+            UIObject.setVisible(taskStatusElement, true);
+        }
     }
 
-    /**
-     * Hides the task status Ui.
-     */
-    public void hideTaskStatus() {
-      UIObject.setVisible(taskStatusElement, false);
+    private final StatusView status = new StatusView();
+
+    public void onModelLoaded(Model model) {
+        status.hideTaskStatus();
+        status.hideErrorStatus();
+
+        final Images images = GWT.create(Images.class);
+
+        // We don't want any top-level scroll bars.
+        Window.enableScrolling(false);
+
+        final RootPanel root = RootPanel.get();
+        new HeaderView(images, root, model);
+        root.add(new SurfaceView(model));
     }
 
-    /**
-     * Displays the Ui for server communication lost errors.
-     */
-    public void showErrorStatus() {
-      UIObject.setVisible(errorStatusElement, true);
+    public void onModelLoadFailed() {
+        retryLater();
+        status.showErrorStatus();
     }
 
-    /**
-     * Displays the the Ui for a task status.
-     *
-     * @param text
-     *          the text to be displayed
-     */
-    public void showTaskStatus(String text) {
-      taskStatusElement.setInnerText(text);
-      UIObject.setVisible(taskStatusElement, true);
+    public void onModuleLoad() {
+        RootPanel.get().add(status);
+        status.showTaskStatus("Loading");
+        Model.load(this, this);
     }
-  }
 
-  private final StatusView status = new StatusView();
+    public void onServerCameBack() {
+        status.hideErrorStatus();
+    }
 
-  public void onModelLoaded(Model model) {
-    status.hideTaskStatus();
-    status.hideErrorStatus();
+    public void onServerWentAway() {
+        status.showErrorStatus();
+    }
 
-    final Images images = GWT.create(Images.class);
+    public void onTaskFinished() {
+        status.hideTaskStatus();
+    }
 
-    // We don't want any top-level scroll bars.
-    Window.enableScrolling(false);
+    public void onTaskStarted(String description) {
+        status.showTaskStatus(description);
+    }
 
-    final RootPanel root = RootPanel.get();
-    new HeaderView(images, root, model);
-    root.add(new SurfaceView(model));
-  }
-
-  public void onModelLoadFailed() {
-    retryLater();
-    status.showErrorStatus();
-  }
-
-  public void onModuleLoad() {
-    RootPanel.get().add(status);
-    status.showTaskStatus("Loading");
-    Model.load(this, this);
-  }
-
-  public void onServerCameBack() {
-    status.hideErrorStatus();
-  }
-
-  public void onServerWentAway() {
-    status.showErrorStatus();
-  }
-
-  public void onTaskFinished() {
-    status.hideTaskStatus();
-  }
-
-  public void onTaskStarted(String description) {
-    status.showTaskStatus(description);
-  }
-
-  @Override
-  protected void retry() {
-    Model.load(this, this);
-  }
+    @Override
+    protected void retry() {
+        Model.load(this, this);
+    }
 }

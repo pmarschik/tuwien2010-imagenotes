@@ -24,136 +24,114 @@ import com.google.gwt.user.client.ui.ToggleButton;
 /**
  * A collection of static factories to create {@link CustomButton}s with various
  * state faces.
- *
  */
 public class Buttons {
-  /**
-   * Creates a {@link PushButton} with the specified face images and stylename.
-   *
-   * @param upImage
-   *          the image to be used on the up face
-   * @param hvImage
-   *          the image to be used on the hover face
-   * @param dnImage
-   *          the image to be used on the down face
-   * @param styleName
-   *          the stylename to use for the widget
-   * @param handler
-   *          a click handler to which to bind the button
-   * @return the button
-   */
-  public static PushButton createPushButtonWithImageStates(Image upImage,
-      Image hvImage, Image dnImage, String styleName, ClickHandler handler) {
-    final PushButton button = createPushButtonWithImageStates(upImage, hvImage,
-        styleName, handler);
-    button.getDownFace().setImage(dnImage);
-    return button;
-  }
+    /**
+     * Creates a {@link PushButton} with the specified face images and stylename.
+     *
+     * @param upImage   the image to be used on the up face
+     * @param hvImage   the image to be used on the hover face
+     * @param dnImage   the image to be used on the down face
+     * @param styleName the stylename to use for the widget
+     * @param handler   a click handler to which to bind the button
+     * @return the button
+     */
+    public static PushButton createPushButtonWithImageStates(Image upImage,
+                                                             Image hvImage, Image dnImage, String styleName,
+                                                             ClickHandler handler) {
+        final PushButton button = createPushButtonWithImageStates(upImage, hvImage,
+                styleName, handler);
+        button.getDownFace().setImage(dnImage);
+        return button;
+    }
 
-  /**
-   * Creates a {@link PushButton} with the specified face images and stylename.
-   *
-   * @param upImage
-   *          the image to be used on the up face
-   * @param hvImage
-   *          the image to be used on the hover face
-   * @param styleName
-   *          the stylename to use for the widget
-   * @param handler
-   *          a click handler to which to bind the button
-   * @return the button
-   */
-  public static PushButton createPushButtonWithImageStates(Image upImage,
-      Image hvImage, String styleName, ClickHandler handler) {
-    final PushButton button = createPushButtonWithImageStates(upImage,
-        styleName, handler);
-    button.getUpHoveringFace().setImage(hvImage);
-    return button;
-  }
+    /**
+     * Creates a {@link PushButton} with the specified face images and stylename.
+     *
+     * @param upImage   the image to be used on the up face
+     * @param hvImage   the image to be used on the hover face
+     * @param styleName the stylename to use for the widget
+     * @param handler   a click handler to which to bind the button
+     * @return the button
+     */
+    public static PushButton createPushButtonWithImageStates(Image upImage,
+                                                             Image hvImage, String styleName, ClickHandler handler) {
+        final PushButton button = createPushButtonWithImageStates(upImage,
+                styleName, handler);
+        button.getUpHoveringFace().setImage(hvImage);
+        return button;
+    }
 
-  /**
-   * Creates a {@link PushButton} with the specified face images and stylename.
-   *
-   * @param upImage
-   *          the image to be used on the up face
-   * @param styleName
-   *          the stylename to use for the widget
-   * @param handler
-   *          a click handler to which to bind the button
-   * @return the button
-   */
-  public static PushButton createPushButtonWithImageStates(Image upImage,
-      String styleName, ClickHandler handler) {
-    final PushButton button = new PushButton(upImage, handler);
-    button.setStyleName(styleName);
-    return button;
-  }
+    /**
+     * Creates a {@link PushButton} with the specified face images and stylename.
+     *
+     * @param upImage   the image to be used on the up face
+     * @param styleName the stylename to use for the widget
+     * @param handler   a click handler to which to bind the button
+     * @return the button
+     */
+    public static PushButton createPushButtonWithImageStates(Image upImage,
+                                                             String styleName, ClickHandler handler) {
+        final PushButton button = new PushButton(upImage, handler);
+        button.setStyleName(styleName);
+        return button;
+    }
 
-  /**
-   * Creates a {@link ToggleButton} with the specified face images and
-   * stylename.
-   *
-   * @param upImage
-   *          the image to be used on the up face
-   * @param hvImage
-   *          the image to be used on the hover face
-   * @param dnImage
-   *          the image to be used on the down face
-   * @param styleName
-   *          the stylename to use for the widget
-   * @param handler
-   *          a click handler to which to bind the button
-   * @return the button
-   */
-  public static ToggleButton createToggleButtonWithImageStates(Image upImage,
-      Image hvImage, Image dnImage, String styleName, ClickHandler handler) {
-    final ToggleButton button = createToggleButtonWithImageStates(upImage,
-        hvImage, styleName, handler);
-    button.getDownFace().setImage(dnImage);
-    return button;
-  }
+    /**
+     * Creates a {@link ToggleButton} with the specified face images and
+     * stylename.
+     *
+     * @param upImage   the image to be used on the up face
+     * @param hvImage   the image to be used on the hover face
+     * @param dnImage   the image to be used on the down face
+     * @param styleName the stylename to use for the widget
+     * @param handler   a click handler to which to bind the button
+     * @return the button
+     */
+    public static ToggleButton createToggleButtonWithImageStates(Image upImage,
+                                                                 Image hvImage, Image dnImage, String styleName,
+                                                                 ClickHandler handler) {
+        final ToggleButton button = createToggleButtonWithImageStates(upImage,
+                hvImage, styleName, handler);
+        button.getDownFace().setImage(dnImage);
+        return button;
+    }
 
-  /**
-   * Creates a {@link ToggleButton} with the specified face images and
-   * stylename.
-   *
-   * @param upImage
-   *          the image to be used on the up face
-   * @param hvImage
-   *          the image to be used on the hover face
-   * @param styleName
-   *          the stylename to use for the widget
-   * @param handler
-   *          a click handler to which to bind the button
-   * @return the button
-   */
-  public static ToggleButton createToggleButtonWithImageStates(Image upImage,
-      Image hvImage, String styleName, ClickHandler handler) {
-    final ToggleButton button = createToggleButtonWithImageStates(upImage,
-        styleName, handler);
-    button.getUpHoveringFace().setImage(hvImage);
-    return button;
-  }
+    /**
+     * Creates a {@link ToggleButton} with the specified face images and
+     * stylename.
+     *
+     * @param upImage   the image to be used on the up face
+     * @param hvImage   the image to be used on the hover face
+     * @param styleName the stylename to use for the widget
+     * @param handler   a click handler to which to bind the button
+     * @return the button
+     */
+    public static ToggleButton createToggleButtonWithImageStates(Image upImage,
+                                                                 Image hvImage, String styleName,
+                                                                 ClickHandler handler) {
+        final ToggleButton button = createToggleButtonWithImageStates(upImage,
+                styleName, handler);
+        button.getUpHoveringFace().setImage(hvImage);
+        return button;
+    }
 
-  /**
-   * Creates a {@link ToggleButton} with the specified face images and
-   * stylename.
-   *
-   * @param upImage
-   *          the image to be used on the up face
-   * @param styleName
-   *          the stylename to use for the widget
-   * @param handler
-   *          a click handler to which to bind the button
-   * @return the button
-   */
-  public static ToggleButton createToggleButtonWithImageStates(Image upImage,
-      String styleName, ClickHandler handler) {
-    final ToggleButton button = new ToggleButton(upImage, handler);
-    button.setStyleName(styleName);
-    return button;
-  }
+    /**
+     * Creates a {@link ToggleButton} with the specified face images and
+     * stylename.
+     *
+     * @param upImage   the image to be used on the up face
+     * @param styleName the stylename to use for the widget
+     * @param handler   a click handler to which to bind the button
+     * @return the button
+     */
+    public static ToggleButton createToggleButtonWithImageStates(Image upImage,
+                                                                 String styleName, ClickHandler handler) {
+        final ToggleButton button = new ToggleButton(upImage, handler);
+        button.setStyleName(styleName);
+        return button;
+    }
 
-  private Buttons() {
-  }
+    private Buttons() {
+    }
 }

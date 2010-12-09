@@ -19,75 +19,72 @@ import java.io.Serializable;
 
 /**
  * A client-side data object representing an author.
- *
  */
 @SuppressWarnings("serial")
 public class Author implements Serializable {
 
-  /**
-   * Returns a shorter name for an author. For names of the form a@company.com,
-   * this returns "a". For names of the form First Last, this returns "First".
-   *
-   * @return
-   */
-  public static String getShortName(String name) {
-    final int atIndex = name.indexOf('@');
-    if (atIndex > 0) {
-      return name.substring(0, atIndex);
+    /**
+     * Returns a shorter name for an author. For names of the form a@company.com,
+     * this returns "a". For names of the form First Last, this returns "First".
+     *
+     * @return
+     */
+    public static String getShortName(String name) {
+        final int atIndex = name.indexOf('@');
+        if (atIndex > 0) {
+            return name.substring(0, atIndex);
+        }
+
+        final int spIndex = name.indexOf(' ');
+        if (spIndex > 0) {
+            return name.substring(0, spIndex);
+        }
+
+        return name;
     }
 
-    final int spIndex = name.indexOf(' ');
-    if (spIndex > 0) {
-      return name.substring(0, spIndex);
+    /**
+     * The author's email address.
+     */
+    private String email;
+
+    /**
+     * A nickname for the user. If the author has no nick name this will be set to
+     * the author's email address, as well.
+     */
+    private String name;
+
+    /**
+     * @param email the authors email
+     * @param name  a nick name for the user
+     */
+    public Author(String email, String name) {
+        this.email = email;
+        this.name = name;
     }
 
-    return name;
-  }
+    /**
+     * Need for RPC serialization.
+     */
+    @SuppressWarnings("unused")
+    private Author() {
+    }
 
-  /**
-   * The author's email address.
-   */
-  private String email;
+    public String getEmail() {
+        return email;
+    }
 
-  /**
-   * A nickname for the user. If the author has no nick name this will be set to
-   * the author's email address, as well.
-   */
-  private String name;
+    public String getName() {
+        return name;
+    }
 
-  /**
-   * @param email
-   *          the authors email
-   * @param name
-   *          a nick name for the user
-   */
-  public Author(String email, String name) {
-    this.email = email;
-    this.name = name;
-  }
-
-  /**
-   * Need for RPC serialization.
-   */
-  @SuppressWarnings("unused")
-  private Author() {
-  }
-
-  public String getEmail() {
-    return email;
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  /**
-   * Convenience method that calls through to
-   * {@link Author#getShortName(String)}.
-   *
-   * @return
-   */
-  public String getShortName() {
-    return getShortName(name);
-  }
+    /**
+     * Convenience method that calls through to
+     * {@link Author#getShortName(String)}.
+     *
+     * @return
+     */
+    public String getShortName() {
+        return getShortName(name);
+    }
 }

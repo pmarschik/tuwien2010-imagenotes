@@ -15,87 +15,85 @@
 
 package com.google.appengine.demos.sticky.client.model;
 
-import java.util.Date;
-
 import com.google.gwt.user.client.rpc.AsyncCallback;
+
+import java.util.Date;
 
 /**
  * The asynchronous interface for calls to {@link Service}.
- *
- *
  */
 public interface ServiceAsync {
 
-  /**
-   * @see Service#addAuthorToSurface(String, String)
-   * @param surfaceKey
-   * @param email
-   * @param callback
-   */
-  void addAuthorToSurface(String surfaceKey, String email,
-      AsyncCallback<Service.AddAuthorToSurfaceResult> callback);
+    /**
+     * @param surfaceKey
+     * @param email
+     * @param callback
+     * @see Service#addAuthorToSurface(String, String)
+     */
+    void addAuthorToSurface(String surfaceKey, String email,
+                            AsyncCallback<Service.AddAuthorToSurfaceResult> callback);
 
-  /**
-   * @see Service#changeNoteContent(String, String)
-   * @param noteKey
-   * @param content
-   * @param callback
-   */
-  void changeNoteContent(String noteKey, String content,
-      AsyncCallback<Date> callback);
+    /**
+     * @param noteKey
+     * @param content
+     * @param callback
+     * @see Service#changeNoteContent(String, String)
+     */
+    void changeNoteContent(String noteKey, String content,
+                           AsyncCallback<Date> callback);
 
-  /**
-   * @see Service#changeNotePosition(String, int, int, int, int)
-   * @param noteKey
-   * @param x
-   * @param y
-   * @param width
-   * @param height
-   * @param callback
-   */
-  void changeNotePosition(String noteKey, int x, int y, int width, int height,
-      AsyncCallback<Date> callback);
+    /**
+     * @param noteKey
+     * @param x
+     * @param y
+     * @param width
+     * @param height
+     * @param callback
+     * @see Service#changeNotePosition(String, int, int, int, int)
+     */
+    void changeNotePosition(String noteKey, int x, int y, int width, int height,
+                            AsyncCallback<Date> callback);
 
-  /**
-   * @see Service#createNote(user, int, int, int, int)
-   * @param surfaceKey
-   * @param x
-   * @param y
-   * @param width
-   * @param height
-   * @param callback
-   */
-  void createNote(String surfaceKey, int x, int y, int width, int height,
-      AsyncCallback<Service.CreateObjectResult> callback);
+    /**
+     * @param surfaceKey
+     * @param x
+     * @param y
+     * @param width
+     * @param height
+     * @param callback
+     * @see Service#createNote(user, int, int, int, int)
+     */
+    void createNote(String surfaceKey, int x, int y, int width, int height,
+                    AsyncCallback<Service.CreateObjectResult> callback);
 
-  /**
-   * @see Service#createSurface(String)
-   * @param title
-   * @param callback
-   */
-  void createSurface(String title,
-      AsyncCallback<Service.CreateObjectResult> callback);
+    /**
+     * @param title
+     * @param callback
+     * @see Service#createSurface(String)
+     */
+    void createSurface(String title,
+                       AsyncCallback<Service.CreateObjectResult> callback);
 
-  /**
-   * @see Service#getNotes(String, String)
-   * @param surfaceKey
-   * @param timestamp
-   * @param callback
-   */
-  void getNotes(String surfaceKey, String timestamp,
-      AsyncCallback<Service.GetNotesResult> callback);
+    /**
+     * @param surfaceKey
+     * @param timestamp
+     * @param callback
+     * @see Service#getNotes(String, String)
+     */
+    void getNotes(String surfaceKey, String timestamp,
+                  AsyncCallback<Service.GetNotesResult> callback);
 
-  /**
-   * @see Service#getSurfaces(String)
-   * @param timestamp
-   * @param callback
-   */
-  void getSurfaces(String timestamp,
-      AsyncCallback<Service.GetSurfacesResult> callback);
+    /**
+     * @param timestamp
+     * @param callback
+     * @see Service#getSurfaces(String)
+     */
+    void getSurfaces(String timestamp,
+                     AsyncCallback<Service.GetSurfacesResult> callback);
 
-  /**
-   * @see Service#getUserInfo()
-   * @param callback
-   */
-  void getUserInfo(AsyncCallback<Service.UserInfoResult> callback);
+    /**
+     * @param callback
+     * @see Service#getUserInfo()
+     */
+    void getUserInfo(AsyncCallback<Service.UserInfoResult> callback);
 }
