@@ -5,3 +5,5 @@ build/
 *.iml
 *.ipr
 .idea/
+.project
+.classpath

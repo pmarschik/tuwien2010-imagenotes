@@ -1,5 +1,7 @@
 <project name="Sticky" default="compile">
     <property file="build.properties"/>
+	
+	<property name="lib.dir" location="lib" />
 
     <macrodef name="compile.gwtc">
         <attribute name="module"/>
@@ -40,6 +42,9 @@
         </copy>
         <copy todir="war/WEB-INF/lib">
             <fileset file="${gwt.sdk}/gwt-servlet.jar"/>
+        </copy>
+		<copy todir="war/WEB-INF/lib">
+            <fileset dir="${lib.dir}" includes="*.jar"/>
         </copy>
     </target>
 
@@ -91,7 +96,9 @@ will need gwt user to resolve all the imports it sees. -->
         <java classname="com.google.appengine.tools.development.DevAppServerMain"
               classpath="${appengine.sdk}/lib/appengine-tools-api.jar"
               fork="true">
+			<jvmarg value="-javaagent:${appengine.sdk}/lib/agent/appengine-agent.jar"/>
             <arg value="war"/>
+			
         </java>
     </target>
 
