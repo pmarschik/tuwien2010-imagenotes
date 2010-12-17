@@ -32,6 +32,7 @@
         <pathelement path="src"/>
         <fileset file="${gwt.sdk}/gwt-user.jar"/>
         <fileset file="${gwt.sdk}/gwt-dev.jar"/>
+		<fileset file="${lib.dir}/gwtupload-0.6.1.jar"/>
     </path>
 
     <target name="copyjars">
@@ -65,6 +66,7 @@ will need gwt user to resolve all the imports it sees. -->
         <!-- copy configs -->
         <copy todir="war/WEB-INF/classes">
             <fileset dir="src" includes="META-INF/**"/>
+			<fileset file="src/log4j.properties" />
         </copy>
         <!-- build backend classes -->
         <javac srcdir="src"

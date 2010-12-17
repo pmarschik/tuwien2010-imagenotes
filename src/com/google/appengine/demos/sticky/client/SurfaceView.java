@@ -15,6 +15,9 @@
 
 package com.google.appengine.demos.sticky.client;
 
+import gwtupload.client.IUploader;
+import gwtupload.client.SingleUploader;
+
 import com.google.appengine.demos.sticky.client.model.Model;
 import com.google.appengine.demos.sticky.client.model.Note;
 import com.google.appengine.demos.sticky.client.model.Surface;
@@ -28,8 +31,11 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.Hidden;
+import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TextArea;
+import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.WidgetCollection;
 
 /**
@@ -69,9 +75,28 @@ public class SurfaceView extends FlowPanel implements Model.DataObserver {
             titleElement = elem.appendChild(Document.get().createDivElement());
             titleElement.setClassName("note-title");
 
+            //TODO
+            SingleUploader uploader = new SingleUploader();
+            uploader.add(new Hidden("noteKey", note.getKey()));
+            uploader.setServletPath("/sticky/imageUpload");
+            uploader.addOnFinishUploadHandler( new IUploader.OnFinishUploaderHandler() {
+    			
+    			@Override
+    			public void onFinish(IUploader uploader) {
+    				
+    			}
+    		});
+            Image image = new Image("http://127.0.0.1:8888/sticky/imageFetch/aglrZWxsZWdvdXNyMgsSDVN0b3JlJFN1cmZhY2UYAQwLEgpTdG9yZSROb3RlGAIMCxIJTm90ZUltYWdlGAMM");
+            
+            VerticalPanel mainPanel = new VerticalPanel();
+            mainPanel.add(image);
+            mainPanel.add(content);
+            mainPanel.add(uploader);
+            
             content.setStyleName("note-content");
             content.addValueChangeHandler(this);
-            setWidget(content);
+            
+            setWidget(mainPanel);
 
             render();
 

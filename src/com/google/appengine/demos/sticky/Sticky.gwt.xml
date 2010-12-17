@@ -3,5 +3,10 @@
         "http://google-web-toolkit.googlecode.com/svn/tags/0.0.0/distro-source/core/src/gwt-module.dtd">
 <module rename-to='sticky'>
     <inherits name='com.google.gwt.user.User'/>
+    
+    <!-- For gwt-file-upload -->
+    <inherits name='gwtupload.GWTUpload'/>
+    <stylesheet src="Upload.css"/>
+    
     <entry-point class='com.google.appengine.demos.sticky.client.Main'/>
 </module>

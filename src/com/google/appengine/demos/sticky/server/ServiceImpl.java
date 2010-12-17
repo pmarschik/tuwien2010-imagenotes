@@ -115,7 +115,7 @@ public class ServiceImpl extends RemoteServiceServlet implements Service {
     /**
      * A reference to the data store.
      */
-    private final Store store = new Store("transactions-optional");
+    private final Store store = Store.getInstance();
 
     /**
      * A reference to a cache service.

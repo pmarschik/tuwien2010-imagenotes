@@ -9,11 +9,28 @@
         <servlet-name>service</servlet-name>
         <servlet-class>com.google.appengine.demos.sticky.server.ServiceImpl</servlet-class>
     </servlet>
-
     <servlet-mapping>
         <servlet-name>service</servlet-name>
         <url-pattern>/sticky/service</url-pattern>
     </servlet-mapping>
+    
+    <servlet>
+        <servlet-name>imageUpload</servlet-name>
+        <servlet-class>com.google.appengine.demos.sticky.server.ImageUploadServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>imageUpload</servlet-name>
+        <url-pattern>/sticky/imageUpload</url-pattern>
+    </servlet-mapping>    
+    
+    <servlet>
+        <servlet-name>imageFetch</servlet-name>
+        <servlet-class>com.google.appengine.demos.sticky.server.ImageFetchServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>imageFetch</servlet-name>
+        <url-pattern>/sticky/imageFetch/*</url-pattern>
+    </servlet-mapping> 
 
     <security-constraint>
         <web-resource-collection>

@@ -18,6 +18,7 @@ package com.google.appengine.demos.sticky.server;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.users.User;
+import com.google.appengine.demos.sticky.server.model.NoteImage;
 
 import javax.jdo.*;
 import javax.jdo.annotations.*;
@@ -77,6 +78,15 @@ public class Store {
          */
         public Author getAuthor(String email) {
             return manager.getObjectById(Author.class, email);
+        }
+        
+        /**
+         * Gets the NoteImage by its key
+         * @param key
+         * @return
+         */
+        public NoteImage getNoteImage(Key key) {
+        	return manager.getObjectById(NoteImage.class, key);
         }
 
         /**
@@ -372,6 +382,12 @@ public class Store {
          */
         @Persistent
         private String authorName;
+        
+        /**
+         * Uploaded image for this note.
+         */
+        @Persistent
+        private NoteImage image;
 
         /**
          * Create a new note.
@@ -528,6 +544,14 @@ public class Store {
         public void setY(int y) {
             this.y = y;
         }
+
+		public void setImage(NoteImage image) {
+			this.image = image;
+		}
+
+		public NoteImage getImage() {
+			return image;
+		}
     }
 
     /**
@@ -653,14 +677,20 @@ public class Store {
     }
 
     private final PersistenceManagerFactory factory;
+    
+    private static final Store instance = new Store("transactions-optional");
 
     /**
      * Create a new Store based on a particular config.
      *
      * @param config
      */
-    public Store(String config) {
+    private Store(String config) {
         this.factory = JDOHelper.getPersistenceManagerFactory(config);
+    }
+    
+    public static Store getInstance() {
+    	return instance;
     }
 
     /**

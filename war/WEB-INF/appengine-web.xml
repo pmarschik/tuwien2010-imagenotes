@@ -11,4 +11,12 @@
         <!-- deserialize incoming requests.                                     -->
         <include path="**/*.gwt.rpc"/>
     </resource-files>
+    
+    <system-properties>
+    	<property name="java.util.logging.config.file" value="WEB-INF/logging.properties"/>
+    </system-properties>
+    
+    <!-- Sessions needed for gwt-file-upload -->
+    <sessions-enabled>true</sessions-enabled>
+  
 </appengine-web-app>
