@@ -28,6 +28,7 @@ import com.google.appengine.demos.sticky.client.model.Surface;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 import javax.jdo.Transaction;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -81,10 +82,12 @@ public class ServiceImpl extends RemoteServiceServlet implements Service {
     private static Note[] toClientNotes(Collection<Store.Note> notes) {
         final Note[] clients = new Note[notes.size()];
         int i = 0;
+                
         for (Store.Note n : notes) {
             clients[i++] = new Note(KeyFactory.keyToString(n.getKey()), n.getX(), n
                     .getY(), n.getWidth(), n.getHeight(), n.getContent(), n
-                    .getLastUpdatedAt(), n.getAuthorName(), n.getAuthorEmail());
+                    .getLastUpdatedAt(), n.getAuthorName(), n.getAuthorEmail(), 
+                    n.getImageKey());
         }
         return clients;
     }
@@ -382,5 +385,22 @@ public class ServiceImpl extends RemoteServiceServlet implements Service {
         final Store.Author author = api.getOrCreateNewAuthor(user);
         return cache.putSurfaceKeys(email, author.getSurfaceKeys());
     }
+
+	@Override
+	public GetNoteResult getNote(String noteKey) throws AccessDeniedException {
+		final Store.Api api = store.getApi();
+        try {
+            final Key key = KeyFactory.stringToKey(noteKey);
+            
+            final Store.Note n = api.getNote(key);
+            final Note note = new Note(KeyFactory.keyToString(n.getKey()), n.getX(), n
+                    .getY(), n.getWidth(), n.getHeight(), n.getContent(), new Date(),
+                    n.getAuthorName(), n.getAuthorEmail(), n.getImageKey());
+            cache.deleteNotes(getSurfaceKey(n));
+            return new GetNoteResult(note);
+        } finally {
+            api.close();
+        }
+	}
 
 }

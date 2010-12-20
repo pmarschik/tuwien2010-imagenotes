@@ -552,6 +552,14 @@ public class Store {
 		public NoteImage getImage() {
 			return image;
 		}
+		
+		public String getImageKey() {
+			if(image!=null) {
+				return image.getKey();
+			} else {
+				return null;
+			}
+		}
     }
 
     /**

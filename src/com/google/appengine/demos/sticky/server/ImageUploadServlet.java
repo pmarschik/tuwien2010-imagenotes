@@ -41,7 +41,7 @@ public class ImageUploadServlet extends AppEngineUploadAction {
 		if(sessionFiles != null) {
 			for(FileItem fItem : sessionFiles) {				
 				if(fItem.isFormField()==false) {					
-					log.debug("File Uploaded: " + fItem.getFieldName() + 
+					log.debug("File Uploaded: " + fItem.getName() + 
 							  ", Content-Type: " + fItem.getContentType());
 					
 					contentType = fItem.getContentType();
@@ -86,7 +86,7 @@ public class ImageUploadServlet extends AppEngineUploadAction {
 			api.saveNote(note);
 			tx.commit();
 			
-			log.debug("Key=" + image.getKey());
+			log.debug("Persisted image with key: " + image.getKey());
 						
 		} catch(Exception ex) {
 			log.error(ex.getMessage(), ex);

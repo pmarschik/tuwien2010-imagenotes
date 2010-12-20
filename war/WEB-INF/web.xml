@@ -15,6 +15,15 @@
     </servlet-mapping>
     
     <servlet>
+        <servlet-name>imageService</servlet-name>
+        <servlet-class>com.google.appengine.demos.sticky.server.ImageServiceImpl</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>imageService</servlet-name>
+        <url-pattern>/sticky/imageService</url-pattern>
+    </servlet-mapping>
+    
+    <servlet>
         <servlet-name>imageUpload</servlet-name>
         <servlet-class>com.google.appengine.demos.sticky.server.ImageUploadServlet</servlet-class>
     </servlet>

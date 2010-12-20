@@ -186,6 +186,44 @@ public interface Service extends RemoteService {
             return timestamp;
         }
     }
+    
+    @SuppressWarnings("serial")
+    static class GetNoteResult implements Serializable {
+        
+        private Note note;
+
+        /**
+         * Constructs a new result. This constructor can only be invoked on the
+         * server.
+         *
+         * @param timestamp an opaque timestamp
+         * @param notes     the list of notes to return
+         */
+        public GetNoteResult(Note note) {
+            assert !GWT.isClient();
+            
+            this.note = note;
+        }
+
+        /**
+         * Needed for RPC serialization.
+         */
+        @SuppressWarnings("unused")
+        private GetNoteResult() {
+        }
+
+        /**
+         * Returns the notes that were returned by the server. This can be
+         * zero-length, but will not be null.
+         *
+         * @return
+         */
+        public Note getNote() {
+            return note;
+        }
+
+        
+    }
 
     /**
      * Encapsulates a response to {@link Service#getSurfaces(String)}.
@@ -370,6 +408,8 @@ public interface Service extends RemoteService {
      */
     GetNotesResult getNotes(String surfaceKey, String timestamp)
             throws AccessDeniedException;
+    
+    GetNoteResult getNote(String noteKey) throws AccessDeniedException;
 
     /**
      * Get all the surfaces for the currently logged in author.

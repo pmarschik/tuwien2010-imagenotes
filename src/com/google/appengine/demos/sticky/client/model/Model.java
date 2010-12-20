@@ -16,6 +16,7 @@
 package com.google.appengine.demos.sticky.client.model;
 
 import com.google.appengine.demos.sticky.client.model.Service.CreateObjectResult;
+import com.google.appengine.demos.sticky.client.model.Service.GetNoteResult;
 import com.google.appengine.demos.sticky.client.model.Service.UserInfoResult;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -130,6 +131,70 @@ public class Model {
      */
     public static interface SuccessCallback {
         void onResponse(boolean success);
+    }
+    
+    private class GetImageUrlTask extends Task implements AsyncCallback<String> {
+    	
+    	private final Note note;
+    	    	
+    	public GetImageUrlTask(Note note) {
+    		this.note = note;
+    	}
+
+		@Override
+		public void onFailure(Throwable caught) {
+			System.out.println("=== GetImageUrlTask === : onFailure");
+			caught.printStackTrace();
+			getQueue().taskFailed(this, caught instanceof ImageService.ImageNotFoundException);
+		}
+
+		@Override
+		public void onSuccess(String result) {
+			System.out.println("=== GetImageUrlTask === : " + result);
+			note.setImageUrl(result);
+			note.setHasImage(true);
+			note.update(note);
+			getQueue().taskSucceeded(this);
+		}
+
+		@Override
+		void execute() {
+			imageService.getImageUrl(note.getImageKey(), this);
+		}
+    	
+    }
+    
+    private class ReloadNoteTask extends Task implements AsyncCallback<GetNoteResult> {
+    	
+    	private final Note note;
+    	private final SuccessCallback callback;
+    	    	
+    	public ReloadNoteTask(Note note, SuccessCallback callback) {
+    		this.callback = callback;
+    		this.note = note;
+    	}
+
+		@Override
+		public void onFailure(Throwable caught) {
+			System.out.println("=== ReloadNoteTask === : onFailure");
+			caught.printStackTrace();
+			getQueue().taskFailed(this, caught instanceof ImageService.ImageNotFoundException);
+		}
+
+		@Override
+		public void onSuccess(GetNoteResult result) {
+			System.out.println("=== ReloadNoteTask === : " + result.getNote().getImageKey());
+			note.setImageKey(result.getNote().getImageKey());
+			callback.onResponse(true);
+			
+			getQueue().taskSucceeded(this);
+		}
+
+		@Override
+		void execute() {
+			api.getNote(note.getKey(), this);
+		}
+    	
     }
 
     /**
@@ -428,6 +493,7 @@ public class Model {
     public static void load(final LoadObserver loadObserver,
                             final StatusObserver statusObserver) {
         final ServiceAsync api = GWT.create(Service.class);
+        //final ImageServiceAsync imageService = GWT.create(ImageService.class);
         api.getUserInfo(new AsyncCallback<Service.UserInfoResult>() {
             public void onFailure(Throwable caught) {
                 loadObserver.onModelLoadFailed();
@@ -448,6 +514,12 @@ public class Model {
      * An rpc proxy for making calls to the server.
      */
     private final ServiceAsync api;
+    
+    
+    /**
+     * Our image service
+     */
+    private final ImageServiceAsync imageService = GWT.create(ImageService.class);
 
     /**
      * The currently selected surface. This should never be null.
@@ -560,6 +632,16 @@ public class Model {
         notifySurfaceCreated(surface);
         taskQueue.post(new CreateSurfaceTask(surface));
         selectSurface(surface);
+    }
+    
+    public void getImageUrlForNote(Note note) {
+    	taskQueue.post(new GetImageUrlTask(note));
+    }
+    
+    public void imageUploaded(Note note, SuccessCallback callback) {
+    	//note.update(new Date());
+    	taskQueue.post(new ReloadNoteTask(note, callback));
+    	//taskQueue.post(new GetImageUrlTask(note));
     }
 
     /**

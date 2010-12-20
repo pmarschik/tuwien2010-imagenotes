@@ -15,6 +15,7 @@
 
 package com.google.appengine.demos.sticky.client.model;
 
+import com.google.appengine.demos.sticky.client.model.Service.GetNoteResult;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 import java.util.Date;
@@ -96,4 +97,6 @@ public interface ServiceAsync {
      * @see Service#getUserInfo()
      */
     void getUserInfo(AsyncCallback<Service.UserInfoResult> callback);
+
+	void getNote(String noteKey, AsyncCallback<GetNoteResult> callback);
 }

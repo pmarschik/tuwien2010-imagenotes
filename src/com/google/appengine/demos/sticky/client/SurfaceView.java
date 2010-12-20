@@ -48,13 +48,17 @@ public class SurfaceView extends FlowPanel implements Model.DataObserver {
      * A widget for displaying a single {@link Note}.
      */
     private class NoteView extends SimplePanel implements Note.Observer,
-            MouseUpHandler, MouseDownHandler, MouseMoveHandler,
-            ValueChangeHandler<String> {
+            MouseUpHandler, MouseDownHandler, MouseMoveHandler, Model.SuccessCallback,
+            ValueChangeHandler<String>, IUploader.OnFinishUploaderHandler {
         private final Note note;
 
         private final DivElement titleElement;
 
         private final TextArea content = new TextArea();
+        
+        private Image image = new Image();
+        private SingleUploader uploader = new SingleUploader();
+        private Hidden uploaderNoteKey = new Hidden("noteKey");
 
         // Dragging state.
         private boolean dragging;
@@ -74,20 +78,13 @@ public class SurfaceView extends FlowPanel implements Model.DataObserver {
             elem.getStyle().setProperty("position", "absolute");
             titleElement = elem.appendChild(Document.get().createDivElement());
             titleElement.setClassName("note-title");
-
-            //TODO
-            SingleUploader uploader = new SingleUploader();
-            uploader.add(new Hidden("noteKey", note.getKey()));
-            uploader.setServletPath("/sticky/imageUpload");
-            uploader.addOnFinishUploadHandler( new IUploader.OnFinishUploaderHandler() {
-    			
-    			@Override
-    			public void onFinish(IUploader uploader) {
-    				
-    			}
-    		});
-            Image image = new Image("http://127.0.0.1:8888/sticky/imageFetch/aglrZWxsZWdvdXNyMgsSDVN0b3JlJFN1cmZhY2UYAQwLEgpTdG9yZSROb3RlGAIMCxIJTm90ZUltYWdlGAMM");
             
+            //Create Upload widget
+            uploader.add(uploaderNoteKey);
+            uploader.setServletPath("/sticky/imageUpload");
+            uploader.addOnFinishUploadHandler(this);
+            uploader.setVisible(false);
+
             VerticalPanel mainPanel = new VerticalPanel();
             mainPanel.add(image);
             mainPanel.add(content);
@@ -148,6 +145,17 @@ public class SurfaceView extends FlowPanel implements Model.DataObserver {
         public void onUpdate(Note note) {
             render();
         }
+        
+        public void onNoteKeySuccessfullySet(Note note) {
+        	uploaderNoteKey.setValue(note.getKey());
+        	uploader.setVisible(true);
+            render();
+        }
+        
+        public void onImageUpdate(Note note) {
+        	image.setUrl(note.getImageUrl());
+            render();
+        }
 
         public void onValueChange(ValueChangeEvent<String> event) {
             model.updateNoteContent(note, event.getValue());
@@ -170,7 +178,11 @@ public class SurfaceView extends FlowPanel implements Model.DataObserver {
 
             titleElement.setInnerHTML(note.getAuthorName());
 
-            final String noteContent = note.getContent();
+            //final String noteContent = note.getContent(); TODO
+            String noteContent = "Note-Key: " + note.getKey();
+            noteContent += "\nImage-Key: " + note.getImageKey();
+            noteContent += "\nNote-Content: " + note.getContent();
+            
             content.setText((noteContent == null) ? "" : noteContent);
 
             content.setReadOnly(!note.isOwnedByCurrentUser());
@@ -179,6 +191,22 @@ public class SurfaceView extends FlowPanel implements Model.DataObserver {
         private void select() {
             getElement().getStyle().setProperty("zIndex", "" + nextZIndex());
         }
+
+        /**
+         * Called by the uploader, when the upload is finished.
+         */
+		@Override
+		public void onFinish(IUploader val) {
+			//model.updateNoteContent(note, note.getContent());
+			uploader.setVisible(false);
+			model.imageUploaded(note, this);
+		}
+
+		@Override
+		public void onResponse(boolean success) {
+			model.getImageUrlForNote(note);
+			
+		}
     }
 
     private final Model model;

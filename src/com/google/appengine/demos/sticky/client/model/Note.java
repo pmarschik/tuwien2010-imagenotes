@@ -28,6 +28,8 @@ public class Note implements Serializable {
 
     public interface Observer {
         void onUpdate(Note note);
+        void onNoteKeySuccessfullySet(Note note);
+        void onImageUpdate(Note note);
     }
 
     /**
@@ -62,6 +64,18 @@ public class Note implements Serializable {
     private String authorName;
 
     private String authorEmail;
+    
+    /**
+     * The key for the image
+     */
+    private String imageKey;
+    
+    /**
+     * The url for the image
+     */
+    private String imageUrl;
+    
+    private boolean hasImage;
 
     /**
      * An observer to receive callbacks whenever this {@link Note} is updated.
@@ -88,6 +102,8 @@ public class Note implements Serializable {
         this.y = y;
         this.width = width;
         this.height = height;
+        this.imageKey = null;
+        this.hasImage = false;
         ownedByCurrentUser = true;
     }
 
@@ -105,7 +121,7 @@ public class Note implements Serializable {
      * @param ownedByCurrentUser
      */
     public Note(String key, int x, int y, int width, int height, String content,
-                Date lastUpdatedAt, String authorName, String authorEmail) {
+                Date lastUpdatedAt, String authorName, String authorEmail, String imageKey) {
         assert !GWT.isClient();
         this.key = key;
         this.x = x;
@@ -116,6 +132,8 @@ public class Note implements Serializable {
         this.lastUpdatedAt = lastUpdatedAt;
         this.authorName = authorName;
         this.authorEmail = authorEmail;
+        this.imageKey = imageKey;
+        this.hasImage = (imageKey!=null);
     }
 
     /**
@@ -145,6 +163,7 @@ public class Note implements Serializable {
     public Date getLastUpdatedAt() {
         return lastUpdatedAt;
     }
+    
 
     /**
      * Gets the observer that is receiving notification when the note is modified.
@@ -220,8 +239,10 @@ public class Note implements Serializable {
     void initialize(Model model) {
         ownedByCurrentUser = model.getCurrentAuthor().getEmail()
                 .equals(authorEmail);
+        if(hasImage)
+        	model.getImageUrlForNote(this);
     }
-
+    
     /**
      * Invoked when the note has been saved to the server.
      *
@@ -241,8 +262,14 @@ public class Note implements Serializable {
      * @param note a note containing up-to-date information about <code>this</code>
      * @return <code>this</code>, for chaining purposes
      */
-    Note update(Note note) {
+    Note update(Note note) { 
+    	if(note.hasImage) {
+    		hasImage = note.hasImage;
+        	imageUrl = note.imageUrl;
+        	observer.onImageUpdate(this);
+        }
         if (!note.getLastUpdatedAt().equals(lastUpdatedAt)) {
+        	imageKey = note.imageKey;
             key = note.key;
             surfaceKey = note.surfaceKey;
             x = note.x;
@@ -255,13 +282,39 @@ public class Note implements Serializable {
             lastUpdatedAt = note.lastUpdatedAt;
             observer.onUpdate(this);
         }
+                
         return this;
     }
 
+    // Called when the db has stored the note and a key is set
     Note update(String key, Date lastUpdatedAt) {
         this.key = key;
         this.lastUpdatedAt = lastUpdatedAt;
-
+        observer.onNoteKeySuccessfullySet(this);
         return this;
     }
+
+	public void setImageKey(String imageKey) {
+		this.imageKey = imageKey;
+	}
+
+	public String getImageKey() {
+		return imageKey;
+	}
+	
+	public void setImageUrl(String imageUrl) {
+		this.imageUrl = imageUrl;
+	}
+	
+	public String getImageUrl() {
+		return imageUrl;
+	}
+	
+	public boolean hasImage() {
+		return hasImage;
+	}
+	
+	public void setHasImage(boolean hasImage) {
+		this.hasImage = hasImage;
+	}
 }

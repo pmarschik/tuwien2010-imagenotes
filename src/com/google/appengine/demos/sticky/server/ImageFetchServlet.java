@@ -28,7 +28,7 @@ public class ImageFetchServlet extends HttpServlet {
 		String uri = request.getRequestURI();
 		String list[] = uri.split("/");
 		String key = list[list.length-1];
-		log.debug("Key=" + key);
+		log.debug("Fetching image with key: " + key);
 		
 		NoteImage image = getImageFromStore(key);
 		
