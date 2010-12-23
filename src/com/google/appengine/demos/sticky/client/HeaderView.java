@@ -114,7 +114,10 @@ public class HeaderView extends FlowPanel implements Model.DataObserver,
                     removePendingAuthorView(this);
                     button.setVisible(true);
                 } else {
-                    showError("not found, click to fix.");
+                	//editSiteInviteSent(name);
+                	//removePendingAuthorView(this);
+                    //button.setVisible(true);
+                    showError("not found, but join-site invitation was sent.");
                 }
             }
 
@@ -174,6 +177,15 @@ public class HeaderView extends FlowPanel implements Model.DataObserver,
             textBox.setStyleName("header-author-edit-nodata");
             enterEditMode();
         }
+        
+        /*
+        public void editSiteInviteSent(String userName) {
+            textBox.setText(userName + " has been invited to this site!");
+            hasUserData = false;
+            textBox.setStyleName("header-author-edit-nodata");
+            enterEditMode();
+        }
+        */
 
         /**
          * Displays the text box and transitions the controller to edit mode.

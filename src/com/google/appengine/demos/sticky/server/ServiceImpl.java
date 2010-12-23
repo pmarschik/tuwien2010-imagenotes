@@ -28,6 +28,7 @@ import com.google.appengine.demos.sticky.client.model.Surface;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 import javax.jdo.Transaction;
+import javax.servlet.http.HttpServletRequest;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -131,6 +132,14 @@ public class ServiceImpl extends RemoteServiceServlet implements Service {
         final User user = tryGetCurrentUser(UserServiceFactory.getUserService());
         final Store.Api api = store.getApi();
         try {
+        	//Invitation Mailer 
+        	InvitationMailer mailer = new InvitationMailer();
+        	//Get URL to your site
+        	HttpServletRequest request = getThreadLocalRequest();
+        	String url = "http://";
+    		url += request.getServerName();
+    		url += ":" + request.getServerPort();
+        	
             final Key key = KeyFactory.stringToKey(surfaceKey);
 
             final Store.Author me = api.getOrCreateNewAuthor(user);
@@ -139,6 +148,9 @@ public class ServiceImpl extends RemoteServiceServlet implements Service {
             // return null to the client to indicate that the author does not exist
             final Store.Author author = api.tryGetAuthor(email);
             if (author == null) {
+            	//Send invitation to join the site
+            	
+        		mailer.sendJoinSiteInvitation(me, email, url);
                 return null;
             }
 
@@ -167,6 +179,9 @@ public class ServiceImpl extends RemoteServiceServlet implements Service {
                 surface.addAuthorName(author.getName());
                 api.saveSurface(surface);
                 txB.commit();
+                
+                //Send invitation to join the surface
+                mailer.sendJoinSurfaceInvitation(me, email, surface, url);
             }
             return new AddAuthorToSurfaceResult(author.getName(), surface
                     .getLastUpdatedAt());
