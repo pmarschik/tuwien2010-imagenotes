@@ -1,5 +1,9 @@
 package com.google.appengine.demos.sticky.server;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 
@@ -44,7 +48,32 @@ public class ImageUploadServlet extends AppEngineUploadAction {
 							  ", Content-Type: " + fItem.getContentType());
 					
 					contentType = fItem.getContentType();
-					bytes = fItem.get();
+										
+					InputStream stream;
+					try {
+						int bufSize = 8192;
+						int size = (int)fItem.getSize();
+						if(bufSize>size)
+							bufSize=size;
+						int bytesRead = 0;
+						
+						byte[] buffer = new byte[bufSize];
+						stream = fItem.getInputStream();
+						ByteArrayOutputStream bos = new ByteArrayOutputStream();
+						int length = stream.read(buffer, 0, buffer.length);
+						bytesRead += length;
+						while(length!=-1 && bytesRead<=size) {
+							bos.write(buffer, 0, length);
+							length = stream.read(buffer, 0, buffer.length);
+							bytesRead += length;
+						}
+						bytes = bos.toByteArray();
+						log.debug("Bytes: " + bytes.length);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+					
+					log.debug("getSize: " + fItem.getSize());
 					
 				} else if(fItem.getFieldName().equals(NOTE_KEY)){
 					try {
