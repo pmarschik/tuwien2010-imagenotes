@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
-import com.google.appengine.demos.sticky.server.model.NoteImage;
+import com.google.appengine.demos.sticky.server.Store.Note;
 
 @SuppressWarnings("serial")
 public class ImageFetchServlet extends HttpServlet {
@@ -28,26 +28,26 @@ public class ImageFetchServlet extends HttpServlet {
 		String uri = request.getRequestURI();
 		String list[] = uri.split("/");
 		String key = list[list.length-1];
-		log.debug("Fetching image with key: " + key);
+		log.debug("Fetching image for note with key: " + key);
 		
-		NoteImage image = getImageFromStore(key);
+		Note note = getNoteFromStore(key);
 		
-		if(image!=null) {
-			response.setContentType(image.getContentType());
-			response.getOutputStream().write(image.getImageData().getBytes());
+		if(note!=null) {
+			response.setContentType(note.getContentType());
+			response.getOutputStream().write(note.getImageData().getBytes());
 		} else {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND);
 		}
 	}
 	
-	private NoteImage getImageFromStore(String strKey) {
+	private Note getNoteFromStore(String strKey) {
 		Store.Api api = store.getApi();
-		NoteImage image = null;
+		Note note = null;
 		
 		try {
 			Key key = KeyFactory.stringToKey(strKey);
 			Transaction tx = api.begin();
-			image = api.getNoteImage(key);
+			note = api.getNote(key);
 			tx.commit();
 			
 		} catch(Exception ex) {
@@ -56,7 +56,7 @@ public class ImageFetchServlet extends HttpServlet {
 			api.close();
 		}
 		
-		return image;
+		return note;
 	}
 
 }

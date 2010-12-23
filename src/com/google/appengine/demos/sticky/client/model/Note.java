@@ -64,17 +64,15 @@ public class Note implements Serializable {
     private String authorName;
 
     private String authorEmail;
-    
-    /**
-     * The key for the image
-     */
-    private String imageKey;
-    
+        
     /**
      * The url for the image
      */
     private String imageUrl;
     
+    /**
+     * 
+     */
     private boolean hasImage;
 
     /**
@@ -102,7 +100,6 @@ public class Note implements Serializable {
         this.y = y;
         this.width = width;
         this.height = height;
-        this.imageKey = null;
         this.hasImage = false;
         ownedByCurrentUser = true;
     }
@@ -121,7 +118,7 @@ public class Note implements Serializable {
      * @param ownedByCurrentUser
      */
     public Note(String key, int x, int y, int width, int height, String content,
-                Date lastUpdatedAt, String authorName, String authorEmail, String imageKey) {
+                Date lastUpdatedAt, String authorName, String authorEmail) {
         assert !GWT.isClient();
         this.key = key;
         this.x = x;
@@ -132,8 +129,7 @@ public class Note implements Serializable {
         this.lastUpdatedAt = lastUpdatedAt;
         this.authorName = authorName;
         this.authorEmail = authorEmail;
-        this.imageKey = imageKey;
-        this.hasImage = (imageKey!=null);
+        this.hasImage = false;
     }
 
     /**
@@ -269,7 +265,6 @@ public class Note implements Serializable {
         	observer.onImageUpdate(this);
         }
         if (!note.getLastUpdatedAt().equals(lastUpdatedAt)) {
-        	imageKey = note.imageKey;
             key = note.key;
             surfaceKey = note.surfaceKey;
             x = note.x;
@@ -293,14 +288,6 @@ public class Note implements Serializable {
         observer.onNoteKeySuccessfullySet(this);
         return this;
     }
-
-	public void setImageKey(String imageKey) {
-		this.imageKey = imageKey;
-	}
-
-	public String getImageKey() {
-		return imageKey;
-	}
 	
 	public void setImageUrl(String imageUrl) {
 		this.imageUrl = imageUrl;

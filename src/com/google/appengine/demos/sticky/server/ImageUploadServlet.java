@@ -1,7 +1,6 @@
 package com.google.appengine.demos.sticky.server;
 
 import java.io.UnsupportedEncodingException;
-import java.util.Date;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -11,12 +10,12 @@ import org.apache.commons.fileupload.FileItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.appengine.api.datastore.Blob;
 import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.google.appengine.demos.sticky.server.Store.Author;
 import com.google.appengine.demos.sticky.server.Store.Note;
-import com.google.appengine.demos.sticky.server.model.NoteImage;
 
 import gwtupload.server.exceptions.UploadActionException;
 import gwtupload.server.gae.AppEngineUploadAction;
@@ -72,7 +71,7 @@ public class ImageUploadServlet extends AppEngineUploadAction {
 		Store.Api api = store.getApi();
 		
 		User user = UserServiceFactory.getUserService().getCurrentUser();
-		NoteImage image = new NoteImage(bytes, contentType, user.getEmail(), new Date(), new Date());
+		//NoteImage image = new NoteImage(bytes, contentType, user.getEmail(), new Date(), new Date());
 		
 		try {
 			Author me = api.getOrCreateNewAuthor(user);
@@ -82,11 +81,13 @@ public class ImageUploadServlet extends AppEngineUploadAction {
 			if(!note.getAuthorEmail().equalsIgnoreCase(me.getEmail())) {
                 return false;
             }
-			note.setImage(image);
+			
+			note.setImageData(new Blob(bytes));
+			note.setContentType(contentType);
 			api.saveNote(note);
 			tx.commit();
 			
-			log.debug("Persisted image with key: " + image.getKey());
+			log.debug("Persisted image with for note: " + note.getKey());
 						
 		} catch(Exception ex) {
 			log.error(ex.getMessage(), ex);

@@ -15,13 +15,14 @@
 
 package com.google.appengine.demos.sticky.server;
 
+import com.google.appengine.api.datastore.Blob;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.users.User;
-import com.google.appengine.demos.sticky.server.model.NoteImage;
 
 import javax.jdo.*;
 import javax.jdo.annotations.*;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -80,15 +81,7 @@ public class Store {
             return manager.getObjectById(Author.class, email);
         }
         
-        /**
-         * Gets the NoteImage by its key
-         * @param key
-         * @return
-         */
-        public NoteImage getNoteImage(Key key) {
-        	return manager.getObjectById(NoteImage.class, key);
-        }
-
+        
         /**
          * Gets a note from the data store.
          *
@@ -387,7 +380,10 @@ public class Store {
          * Uploaded image for this note.
          */
         @Persistent
-        private NoteImage image;
+    	private Blob imageData;
+        
+        @Persistent
+        private String contentType;
 
         /**
          * Create a new note.
@@ -545,21 +541,23 @@ public class Store {
             this.y = y;
         }
 
-		public void setImage(NoteImage image) {
-			this.image = image;
+		public void setImageData(Blob imageData) {
+			this.imageData = imageData;
 		}
 
-		public NoteImage getImage() {
-			return image;
+		public Blob getImageData() {
+			return imageData;
 		}
+
+		public void setContentType(String contentType) {
+			this.contentType = contentType;
+		}
+
+		public String getContentType() {
+			return contentType;
+		}
+
 		
-		public String getImageKey() {
-			if(image!=null) {
-				return image.getKey();
-			} else {
-				return null;
-			}
-		}
     }
 
     /**

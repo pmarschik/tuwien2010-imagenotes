@@ -16,7 +16,6 @@
 package com.google.appengine.demos.sticky.client.model;
 
 import com.google.appengine.demos.sticky.client.model.Service.CreateObjectResult;
-import com.google.appengine.demos.sticky.client.model.Service.GetNoteResult;
 import com.google.appengine.demos.sticky.client.model.Service.UserInfoResult;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -159,43 +158,11 @@ public class Model {
 
 		@Override
 		void execute() {
-			imageService.getImageUrl(note.getImageKey(), this);
+			imageService.getImageUrl(note.getKey(), this);
 		}
     	
     }
     
-    private class ReloadNoteTask extends Task implements AsyncCallback<GetNoteResult> {
-    	
-    	private final Note note;
-    	private final SuccessCallback callback;
-    	    	
-    	public ReloadNoteTask(Note note, SuccessCallback callback) {
-    		this.callback = callback;
-    		this.note = note;
-    	}
-
-		@Override
-		public void onFailure(Throwable caught) {
-			System.out.println("=== ReloadNoteTask === : onFailure");
-			caught.printStackTrace();
-			getQueue().taskFailed(this, caught instanceof ImageService.ImageNotFoundException);
-		}
-
-		@Override
-		public void onSuccess(GetNoteResult result) {
-			System.out.println("=== ReloadNoteTask === : " + result.getNote().getImageKey());
-			note.setImageKey(result.getNote().getImageKey());
-			callback.onResponse(true);
-			
-			getQueue().taskSucceeded(this);
-		}
-
-		@Override
-		void execute() {
-			api.getNote(note.getKey(), this);
-		}
-    	
-    }
 
     /**
      * A task that manages the call to the server to add an author to a surface.
@@ -638,11 +605,13 @@ public class Model {
     	taskQueue.post(new GetImageUrlTask(note));
     }
     
+    /*
     public void imageUploaded(Note note, SuccessCallback callback) {
     	//note.update(new Date());
     	taskQueue.post(new ReloadNoteTask(note, callback));
     	//taskQueue.post(new GetImageUrlTask(note));
     }
+    */
 
     /**
      * Gets the currently logged in author.

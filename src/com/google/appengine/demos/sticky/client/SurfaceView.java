@@ -178,11 +178,8 @@ public class SurfaceView extends FlowPanel implements Model.DataObserver {
 
             titleElement.setInnerHTML(note.getAuthorName());
 
-            //final String noteContent = note.getContent(); TODO
-            String noteContent = "Note-Key: " + note.getKey();
-            noteContent += "\nImage-Key: " + note.getImageKey();
-            noteContent += "\nNote-Content: " + note.getContent();
-            
+            final String noteContent = note.getContent(); 
+                        
             content.setText((noteContent == null) ? "" : noteContent);
 
             content.setReadOnly(!note.isOwnedByCurrentUser());
@@ -197,15 +194,13 @@ public class SurfaceView extends FlowPanel implements Model.DataObserver {
          */
 		@Override
 		public void onFinish(IUploader val) {
-			//model.updateNoteContent(note, note.getContent());
 			uploader.setVisible(false);
-			model.imageUploaded(note, this);
+			model.getImageUrlForNote(note);
 		}
 
 		@Override
 		public void onResponse(boolean success) {
 			model.getImageUrlForNote(note);
-			
 		}
     }
 
