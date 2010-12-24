@@ -15,27 +15,11 @@
 
 package com.google.appengine.demos.sticky.client;
 
-import gwtupload.client.IUploader;
-import gwtupload.client.SingleUploader;
-
 import com.google.appengine.demos.sticky.client.model.Model;
 import com.google.appengine.demos.sticky.client.model.Note;
 import com.google.appengine.demos.sticky.client.model.Surface;
-import com.google.gwt.dom.client.DivElement;
-import com.google.gwt.dom.client.Document;
-import com.google.gwt.dom.client.EventTarget;
-import com.google.gwt.dom.client.Style;
-import com.google.gwt.event.dom.client.*;
-import com.google.gwt.event.logical.shared.ValueChangeEvent;
-import com.google.gwt.event.logical.shared.ValueChangeHandler;
-import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.FlowPanel;
-import com.google.gwt.user.client.ui.Hidden;
-import com.google.gwt.user.client.ui.Image;
-import com.google.gwt.user.client.ui.SimplePanel;
-import com.google.gwt.user.client.ui.TextArea;
-import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.WidgetCollection;
 
 /**
@@ -44,224 +28,66 @@ import com.google.gwt.user.client.ui.WidgetCollection;
  */
 public class SurfaceView extends FlowPanel implements Model.DataObserver {
 
-    /**
-     * A widget for displaying a single {@link Note}.
-     */
-    private class NoteView extends SimplePanel implements Note.Observer,
-            MouseUpHandler, MouseDownHandler, MouseMoveHandler, Model.SuccessCallback,
-            ValueChangeHandler<String>, IUploader.OnFinishUploaderHandler {
-        private final Note note;
+	private final Model model;
 
-        private final DivElement titleElement;
+	private NoteView selectedNoteView;
 
-        private final TextArea content = new TextArea();
-        
-        private Image image = new Image();
-        private SingleUploader uploader = new SingleUploader();
-        private Hidden uploaderNoteKey = new Hidden("noteKey");
+	private int zIndex = 1;
 
-        // Dragging state.
-        private boolean dragging;
+	/**
+	 * @param model
+	 *            the model to which the Ui will bind itself
+	 */
+	public SurfaceView(Model model) {
+		this.model = model;
+		final Element elem = getElement();
+		elem.setId("surface");
+		elem.getStyle().setProperty("position", "absolute");
+		model.addDataObserver(this);
+	}
 
-        private int dragOffsetX, dragOffsetY;
+	public void onNoteCreated(Note note) {
+		final NoteView view = new NoteView(note, model, callback);
+		add(view);
+		callback.select(view);
+	}
 
-        /**
-         * @param note the note to render
-         */
-        public NoteView(Note note) {
-            this.note = note;
-            setStyleName("note");
-            note.setObserver(this);
+	public void onSurfaceCreated(Surface group) {
+	}
 
-            // Build simple DOM Structure.
-            final Element elem = getElement();
-            elem.getStyle().setProperty("position", "absolute");
-            titleElement = elem.appendChild(Document.get().createDivElement());
-            titleElement.setClassName("note-title");
-            
-            //Create Upload widget
-            uploader.add(uploaderNoteKey);
-            uploader.setServletPath("/sticky/imageUpload");
-            uploader.addOnFinishUploadHandler(this);
-            uploader.setVisible(!note.hasImage());
-            uploaderNoteKey.setValue(note.getKey());
-
-            VerticalPanel mainPanel = new VerticalPanel();
-            mainPanel.add(image);
-            mainPanel.add(content);
-            mainPanel.add(uploader);
-            
-            content.setStyleName("note-content");
-            content.addValueChangeHandler(this);
-            
-            setWidget(mainPanel);
-
-            render();
-
-            addDomHandler(this, MouseDownEvent.getType());
-            addDomHandler(this, MouseMoveEvent.getType());
-            addDomHandler(this, MouseUpEvent.getType());
-        }
-
-        public void onMouseDown(MouseDownEvent event) {
-            SurfaceView.this.select(this);
-            if (!note.isOwnedByCurrentUser()) {
-                return;
-            }
-
-            final EventTarget target = event.getNativeEvent().getEventTarget();
-            assert Element.is(target);
-            if (!Element.is(target)) {
-                return;
-            }
-
-            if (titleElement.isOrHasChild(Element.as(target))) {
-                dragging = true;
-                final Element elem = getElement().cast();
-                dragOffsetX = event.getX();
-                dragOffsetY = event.getY();
-                DOM.setCapture(elem);
-                event.preventDefault();
-            }
-        }
-
-        public void onMouseMove(MouseMoveEvent event) {
-            if (dragging) {
-                setPixelPosition(event.getX() + getAbsoluteLeft() - dragOffsetX,
-                        event.getY() + getAbsoluteTop() - dragOffsetY);
-                event.preventDefault();
-            }
-        }
-
-        public void onMouseUp(MouseUpEvent event) {
-            if (dragging) {
-                dragging = false;
-                DOM.releaseCapture(getElement());
-                event.preventDefault();
-                model.updateNotePosition(note, getAbsoluteLeft(), getAbsoluteTop(),
-                        note.getWidth(), note.getHeight());
-            }
-        }
-
-        public void onUpdate(Note note) {
-        	if(!this.note.hasImage())
-        		uploader.setVisible(true);
-            render();
-        }
-        
-        public void onNoteKeySuccessfullySet(Note note) {
-        	uploaderNoteKey.setValue(note.getKey());
-        	uploader.setVisible(true);
-            render();
-        }
-        
-        public void onImageUpdate(Note note) {
-        	image.setUrl(note.getImageUrl());
-            render();
-        }
-
-        public void onValueChange(ValueChangeEvent<String> event) {
-            model.updateNoteContent(note, event.getValue());
-        }
-
-        public void setPixelPosition(int x, int y) {
-            final Style style = getElement().getStyle();
-            style.setPropertyPx("left", x);
-            style.setPropertyPx("top", y);
-        }
-
-        public void setPixelSize(int width, int height) {
-            content.setPixelSize(width, height);
-        }
-
-        private void render() {
-            setPixelPosition(note.getX(), note.getY());
-
-            setPixelSize(note.getWidth(), note.getHeight());
-
-            titleElement.setInnerHTML(note.getAuthorName());
-
-            final String noteContent = note.getContent(); 
-                                    
-            content.setText((noteContent == null) ? "" : noteContent);
-
-            content.setReadOnly(!note.isOwnedByCurrentUser());
-        }
-
-        private void select() {
-            getElement().getStyle().setProperty("zIndex", "" + nextZIndex());
-        }
-
-        /**
-         * Called by the uploader, when the upload is finished.
-         */
-		@Override
-		public void onFinish(IUploader val) {
-			uploader.setVisible(false);
-			model.getImageUrlForNote(note);
+	public void onSurfaceNotesReceived(Note[] notes) {
+		removeAllNotes();
+		for (int i = 0, n = notes.length; i < n; ++i) {
+			add(new NoteView(notes[i], model, callback));
 		}
+	}
+
+	public void onSurfaceSelected(Surface nowSelected, Surface wasSelected) {
+	}
+
+	public void onSurfacesReceived(Surface[] surfaces) {
+	}
+
+	private int nextZIndex() {
+		return zIndex++;
+	}
+
+	private void removeAllNotes() {
+		final WidgetCollection kids = getChildren();
+		while (kids.size() > 0) {
+			remove(kids.size() - 1);
+		}
+	}
+
+	private NoteSelectionCallback callback = new NoteSelectionCallback() {
 
 		@Override
-		public void onResponse(boolean success) {
-			model.getImageUrlForNote(note);
+		public void select(NoteView noteView) {
+			assert noteView != null;
+			if (selectedNoteView != noteView) {
+				noteView.select(nextZIndex());
+				selectedNoteView = noteView;
+			}
 		}
-    }
-
-    private final Model model;
-
-    private NoteView selectedNoteView;
-
-    private int zIndex = 1;
-
-    /**
-     * @param model the model to which the Ui will bind itself
-     */
-    public SurfaceView(Model model) {
-        this.model = model;
-        final Element elem = getElement();
-        elem.setId("surface");
-        elem.getStyle().setProperty("position", "absolute");
-        model.addDataObserver(this);
-    }
-
-    public void onNoteCreated(Note note) {
-        final NoteView view = new NoteView(note);
-        add(view);
-        select(view);
-    }
-
-    public void onSurfaceCreated(Surface group) {
-    }
-
-    public void onSurfaceNotesReceived(Note[] notes) {
-        removeAllNotes();
-        for (int i = 0, n = notes.length; i < n; ++i) {
-            add(new NoteView(notes[i]));
-        }
-    }
-
-    public void onSurfaceSelected(Surface nowSelected, Surface wasSelected) {
-    }
-
-    public void onSurfacesReceived(Surface[] surfaces) {
-    }
-
-    private int nextZIndex() {
-        return zIndex++;
-    }
-
-    private void removeAllNotes() {
-        final WidgetCollection kids = getChildren();
-        while (kids.size() > 0) {
-            remove(kids.size() - 1);
-        }
-    }
-
-    private void select(NoteView noteView) {
-        assert noteView != null;
-        if (selectedNoteView != noteView) {
-            noteView.select();
-            selectedNoteView = noteView;
-        }
-    }
+	};
 }

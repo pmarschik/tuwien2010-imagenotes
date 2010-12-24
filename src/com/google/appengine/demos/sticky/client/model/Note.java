@@ -260,7 +260,9 @@ public class Note implements Serializable {
      */
     Note update(Note note) { 
     	if(note.hasImage) {
-        	imageUrl = note.imageUrl;
+    		//die zeile verursacht das verschwinden der bilder nach dem ersten update
+    		//TODO: brauchen wir das? die image url wird sich ja nicht mehr ändern oder?
+        	//imageUrl = note.imageUrl;
         	observer.onImageUpdate(this);
         }
         if (!note.getLastUpdatedAt().equals(lastUpdatedAt)) {
