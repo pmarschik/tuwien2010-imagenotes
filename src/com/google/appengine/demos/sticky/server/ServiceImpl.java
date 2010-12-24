@@ -87,7 +87,7 @@ public class ServiceImpl extends RemoteServiceServlet implements Service {
         for (Store.Note n : notes) {
             clients[i++] = new Note(KeyFactory.keyToString(n.getKey()), n.getX(), n
                     .getY(), n.getWidth(), n.getHeight(), n.getContent(), n
-                    .getLastUpdatedAt(), n.getAuthorName(), n.getAuthorEmail());
+                    .getLastUpdatedAt(), n.getAuthorName(), n.getAuthorEmail(), n.getImageData()!=null);
         }
         return clients;
     }
@@ -409,7 +409,7 @@ public class ServiceImpl extends RemoteServiceServlet implements Service {
             final Store.Note n = api.getNote(key);
             final Note note = new Note(KeyFactory.keyToString(n.getKey()), n.getX(), n
                     .getY(), n.getWidth(), n.getHeight(), n.getContent(), new Date(),
-                    n.getAuthorName(), n.getAuthorEmail());
+                    n.getAuthorName(), n.getAuthorEmail(), n.getImageData()!=null);
             cache.deleteNotes(getSurfaceKey(n));
             return new GetNoteResult(note);
         } finally {

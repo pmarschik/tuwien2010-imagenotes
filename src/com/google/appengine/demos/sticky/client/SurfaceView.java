@@ -83,7 +83,8 @@ public class SurfaceView extends FlowPanel implements Model.DataObserver {
             uploader.add(uploaderNoteKey);
             uploader.setServletPath("/sticky/imageUpload");
             uploader.addOnFinishUploadHandler(this);
-            uploader.setVisible(false);
+            uploader.setVisible(!note.hasImage());
+            uploaderNoteKey.setValue(note.getKey());
 
             VerticalPanel mainPanel = new VerticalPanel();
             mainPanel.add(image);
@@ -143,6 +144,8 @@ public class SurfaceView extends FlowPanel implements Model.DataObserver {
         }
 
         public void onUpdate(Note note) {
+        	if(!this.note.hasImage())
+        		uploader.setVisible(true);
             render();
         }
         
@@ -179,7 +182,7 @@ public class SurfaceView extends FlowPanel implements Model.DataObserver {
             titleElement.setInnerHTML(note.getAuthorName());
 
             final String noteContent = note.getContent(); 
-                        
+                                    
             content.setText((noteContent == null) ? "" : noteContent);
 
             content.setReadOnly(!note.isOwnedByCurrentUser());
