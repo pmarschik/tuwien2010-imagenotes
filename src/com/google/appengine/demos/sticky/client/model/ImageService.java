@@ -7,6 +7,7 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 public interface ImageService extends RemoteService {
 	
 	public String getImageUrl(String key) throws ImageNotFoundException;
+	public void rotateImage(String url, int degree);
 	
 	
 	@SuppressWarnings("serial")

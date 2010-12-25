@@ -27,7 +27,13 @@ public class ImageFetchServlet extends HttpServlet {
 		
 		String uri = request.getRequestURI();
 		String list[] = uri.split("/");
-		String key = list[list.length-1];
+		//remove special attachment to reload image
+		String key = "";
+		if(uri.contains("=reload=")){
+			key=list[list.length-1].substring(0,list[list.length-1].indexOf("=reload="));
+		}else{
+			key = list[list.length-1];
+		}
 		log.debug("Fetching image for note with key: " + key);
 		
 		Note note = getNoteFromStore(key);

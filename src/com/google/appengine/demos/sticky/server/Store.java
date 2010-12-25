@@ -15,17 +15,26 @@
 
 package com.google.appengine.demos.sticky.server;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import javax.jdo.JDOHelper;
+import javax.jdo.JDOObjectNotFoundException;
+import javax.jdo.PersistenceManager;
+import javax.jdo.PersistenceManagerFactory;
+import javax.jdo.Transaction;
+import javax.jdo.annotations.Element;
+import javax.jdo.annotations.IdGeneratorStrategy;
+import javax.jdo.annotations.IdentityType;
+import javax.jdo.annotations.PersistenceCapable;
+import javax.jdo.annotations.Persistent;
+import javax.jdo.annotations.PrimaryKey;
+
 import com.google.appengine.api.datastore.Blob;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.users.User;
-
-import javax.jdo.*;
-import javax.jdo.annotations.*;
-
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
 
 /**
  * An application specific Api wrapper around the {@link DatastoreService}.
@@ -45,7 +54,11 @@ public class Store {
         private Api() {
             manager = factory.getPersistenceManager();
         }
-
+        
+		public PersistenceManager getManager() {
+			return manager;
+		}
+		
         /**
          * Begin a new transaction.
          *

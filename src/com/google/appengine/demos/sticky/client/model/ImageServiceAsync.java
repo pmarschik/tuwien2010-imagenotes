@@ -6,4 +6,6 @@ public interface ImageServiceAsync {
 
 	void getImageUrl(String key, AsyncCallback<String> callback);
 
+	void rotateImage(String url, int degree, AsyncCallback<Void> callback);
+
 }
