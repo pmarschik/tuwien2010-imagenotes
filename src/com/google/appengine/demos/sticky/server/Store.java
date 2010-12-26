@@ -194,6 +194,13 @@ public class Store {
                 return null;
             }
         }
+
+		public void removeNote(Key key) {
+            final Transaction txA = begin();
+			Note note=getNote(key);
+			manager.deletePersistent(note);
+			txA.commit();
+		}
     }
 
     /**

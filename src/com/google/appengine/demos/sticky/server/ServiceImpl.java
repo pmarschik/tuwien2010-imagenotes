@@ -15,6 +15,14 @@
 
 package com.google.appengine.demos.sticky.server;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+
+import javax.jdo.Transaction;
+import javax.servlet.http.HttpServletRequest;
+
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.memcache.MemcacheServiceFactory;
@@ -26,14 +34,6 @@ import com.google.appengine.demos.sticky.client.model.Note;
 import com.google.appengine.demos.sticky.client.model.Service;
 import com.google.appengine.demos.sticky.client.model.Surface;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
-
-import javax.jdo.Transaction;
-import javax.servlet.http.HttpServletRequest;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
 
 /**
  * The server-side RPC endpoint for {@link Service}.
@@ -415,6 +415,18 @@ public class ServiceImpl extends RemoteServiceServlet implements Service {
         } finally {
             api.close();
         }
+	}
+
+	@Override
+	public void deleteNote(String noteKey) {		
+		final Store.Api api = store.getApi();
+	    try {
+	        final Key key = KeyFactory.stringToKey(noteKey);
+            cache.deleteNotes(getSurfaceKey(api.getNote(key)));
+			api.removeNote(key);
+		} finally {
+	        api.close();
+	    }	
 	}
 
 }

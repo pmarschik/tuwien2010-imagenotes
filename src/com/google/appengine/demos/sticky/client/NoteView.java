@@ -27,6 +27,7 @@ import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Hidden;
+import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TextArea;
@@ -43,6 +44,20 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 class NoteView extends SimplePanel implements Note.Observer, MouseUpHandler,
 		MouseDownHandler, MouseMoveHandler, Model.SuccessCallback,
 		ValueChangeHandler<String>, IUploader.OnFinishUploaderHandler {
+	private final class DefaultImageManipulationCallback implements
+			AsyncCallback<Void> {
+		@Override
+		public void onFailure(Throwable caught) {
+			System.out.println("can't perform image manipulation " + caught.getMessage());
+		}
+
+		@Override
+		public void onSuccess(Void result) {
+			forceImageReload();
+
+		}
+	}
+
 	private final Note note;
 	private final Model model;
 
@@ -56,6 +71,9 @@ class NoteView extends SimplePanel implements Note.Observer, MouseUpHandler,
 	private SingleUploader uploader = new SingleUploader();
 	private Hidden uploaderNoteKey = new Hidden("noteKey");
 	private Button rotateButton;
+	private Button flipHButton;
+	private Button flipVButton;
+	private Button deletNoteButton;
 
 	// Dragging state.
 	private boolean dragging;
@@ -71,7 +89,7 @@ class NoteView extends SimplePanel implements Note.Observer, MouseUpHandler,
 		this.callback = callback;
 		this.model = model;
 		this.note = note;
-
+		image.setSize("200px", "200px");
 		setStyleName("note");
 		note.setObserver(this);
 
@@ -88,10 +106,21 @@ class NoteView extends SimplePanel implements Note.Observer, MouseUpHandler,
 		uploader.setVisible(!note.hasImage());
 		uploaderNoteKey.setValue(note.getKey());
 
+		deletNoteButton = new Button("X");
+		deletNoteButton.addClickHandler(new ClickHandler() {
+
+			@Override
+			public void onClick(ClickEvent event) {
+				NoteView.this.callback.delete(NoteView.this.note);
+			}
+		});
 		VerticalPanel mainPanel = new VerticalPanel();
+		mainPanel.add(deletNoteButton);
 		mainPanel.add(image);
 		mainPanel.add(content);
 		mainPanel.add(uploader);
+		HorizontalPanel horizontalPanel = new HorizontalPanel();
+		mainPanel.add(horizontalPanel);
 		rotateButton = new Button("rotate");
 		rotateButton.addClickHandler(new ClickHandler() {
 
@@ -99,24 +128,32 @@ class NoteView extends SimplePanel implements Note.Observer, MouseUpHandler,
 			public void onClick(ClickEvent event) {
 
 				imageService.rotateImage(NoteView.this.note.getKey(), 90,
-						new AsyncCallback<Void>() {
-
-							@Override
-							public void onFailure(Throwable caught) {
-								System.out.println("can't rotate image "
-										+ caught.getMessage());
-							}
-
-							@Override
-							public void onSuccess(Void result) {
-								image.setUrl(image.getUrl()+"=reload="+Math.random());
-								render();
-								
-							}
-						});
+						new DefaultImageManipulationCallback());
 			}
 		});
-		mainPanel.add(rotateButton);
+		flipHButton = new Button("flip horizontally");
+		flipHButton.addClickHandler(new ClickHandler() {
+
+			@Override
+			public void onClick(ClickEvent event) {
+				imageService.flipImage(NoteView.this.note.getKey(),
+						ImageService.Flip.H,
+						new DefaultImageManipulationCallback());
+			}
+		});
+		flipVButton = new Button("flip vertically");
+		flipVButton.addClickHandler(new ClickHandler() {
+
+			@Override
+			public void onClick(ClickEvent event) {
+				imageService.flipImage(NoteView.this.note.getKey(),
+						ImageService.Flip.V,
+						new DefaultImageManipulationCallback());
+			}
+		});
+		horizontalPanel.add(rotateButton);
+		horizontalPanel.add(flipHButton);
+		horizontalPanel.add(flipVButton);
 
 		content.setStyleName("note-content");
 		content.addValueChangeHandler(this);
@@ -152,6 +189,9 @@ class NoteView extends SimplePanel implements Note.Observer, MouseUpHandler,
 		}
 	}
 
+	public Note getNote() {
+		return note;
+	}
 	public void onMouseMove(MouseMoveEvent event) {
 		if (dragging) {
 			setPixelPosition(event.getX() + getAbsoluteLeft() - dragOffsetX,
@@ -231,5 +271,10 @@ class NoteView extends SimplePanel implements Note.Observer, MouseUpHandler,
 	@Override
 	public void onResponse(boolean success) {
 		model.getImageUrlForNote(note);
+	}
+
+	private void forceImageReload() {
+		image.setUrl(image.getUrl() + "=reload=" + Math.random());
+		render();
 	}
 }

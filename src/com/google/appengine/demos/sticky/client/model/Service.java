@@ -384,6 +384,12 @@ public interface Service extends RemoteService {
      */
     CreateObjectResult createNote(String surfaceKey, int x, int y, int width,
                                   int height) throws AccessDeniedException;
+    
+    /**
+     * removes a existing note from datastore
+     * @param noteKey
+     */
+    void deleteNote(String noteKey);
 
     /**
      * Create a new {@link Surface}.

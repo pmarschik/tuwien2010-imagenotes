@@ -99,4 +99,6 @@ public interface ServiceAsync {
     void getUserInfo(AsyncCallback<Service.UserInfoResult> callback);
 
 	void getNote(String noteKey, AsyncCallback<GetNoteResult> callback);
+
+	void deleteNote(String noteKey, AsyncCallback<Void> callback);
 }
