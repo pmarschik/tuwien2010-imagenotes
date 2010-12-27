@@ -17,9 +17,14 @@ package com.google.appengine.demos.sticky.client;
 
 import com.google.appengine.demos.sticky.client.model.Model;
 import com.google.appengine.demos.sticky.client.model.Note;
+import com.google.appengine.demos.sticky.client.model.Service;
+import com.google.appengine.demos.sticky.client.model.ServiceAsync;
 import com.google.appengine.demos.sticky.client.model.Surface;
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Element;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.client.ui.WidgetCollection;
 
 /**
@@ -87,6 +92,31 @@ public class SurfaceView extends FlowPanel implements Model.DataObserver {
 			if (selectedNoteView != noteView) {
 				noteView.select(nextZIndex());
 				selectedNoteView = noteView;
+			}
+		}
+
+		@Override
+		public void delete(final Note note) {
+			final WidgetCollection kids = getChildren();
+			NoteView noteW;
+			for (final Widget widget : kids) {
+				noteW=(NoteView) widget;
+				if (noteW.getNote().getKey()==note.getKey()) {
+					//remove note
+					ServiceAsync service = GWT.create(Service.class);
+					service.deleteNote(note.getKey(), new AsyncCallback<Void>() {
+						
+						@Override
+						public void onSuccess(Void result) {
+							remove(widget);
+						}
+						
+						@Override
+						public void onFailure(Throwable caught) {
+							System.out.println("can't delete note "+note.getKey());
+						}
+					});
+				}
 			}
 		}
 	};

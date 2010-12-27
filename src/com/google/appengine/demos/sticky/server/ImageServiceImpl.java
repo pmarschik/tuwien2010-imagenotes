@@ -50,9 +50,41 @@ public class ImageServiceImpl extends RemoteServiceServlet implements
 		Image newImage = imagesService.applyTransform(resize, oldImage);
 		note.setImageData(new Blob(newImage.getImageData()));
 
+		saveNote(note);
+	}
+
+
+	@Override
+	public void flipImage(String key, Flip axis) {
+		Note note = Store.getInstance().getApi()
+				.getNote(KeyFactory.stringToKey(key));
+		ImagesService imagesService = ImagesServiceFactory.getImagesService();
+		Transform flip = null;
+
+		switch (axis) {
+		case H:
+			flip = ImagesServiceFactory.makeHorizontalFlip();
+			break;
+		case V:
+			flip = ImagesServiceFactory.makeVerticalFlip();
+			break;
+
+		default:
+			break;
+		}
+		
+		Image oldImage = ImagesServiceFactory.makeImage(note.getImageData()
+				.getBytes());
+		Image newImage = imagesService.applyTransform(flip, oldImage);
+		note.setImageData(new Blob(newImage.getImageData()));
+
+		saveNote(note);
+
+	}
+
+	private void saveNote(Note note) {
 		JDOHelper.getPersistenceManager(note).currentTransaction().begin();
 		JDOHelper.getPersistenceManager(note).makePersistent(note);
 		JDOHelper.getPersistenceManager(note).currentTransaction().commit();
 	}
-
 }

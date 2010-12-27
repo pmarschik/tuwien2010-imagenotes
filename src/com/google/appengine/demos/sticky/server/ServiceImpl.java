@@ -471,4 +471,16 @@ public class ServiceImpl extends RemoteServiceServlet implements Service {
         }
 	}
 
+	@Override
+	public void deleteNote(String noteKey) {		
+		final Store.Api api = store.getApi();
+	    try {
+	        final Key key = KeyFactory.stringToKey(noteKey);
+            cache.deleteNotes(getSurfaceKey(api.getNote(key)));
+			api.removeNote(key);
+		} finally {
+	        api.close();
+	    }	
+	}
+
 }

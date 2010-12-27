@@ -103,5 +103,5 @@ public interface ServiceAsync {
 
 	void getNote(String noteKey, AsyncCallback<GetNoteResult> callback);
 
-
+	void deleteNote(String noteKey, AsyncCallback<Void> callback);
 }

@@ -32,6 +32,20 @@ import java.util.Arrays;
 class NoteView extends SimplePanel implements Note.Observer, MouseUpHandler,
 		MouseDownHandler, MouseMoveHandler, Model.SuccessCallback,
 		ValueChangeHandler<String>, IUploader.OnFinishUploaderHandler {
+	private final class DefaultImageManipulationCallback implements
+			AsyncCallback<Void> {
+		@Override
+		public void onFailure(Throwable caught) {
+			System.out.println("can't perform image manipulation " + caught.getMessage());
+		}
+
+		@Override
+		public void onSuccess(Void result) {
+			forceImageReload();
+
+		}
+	}
+
 	private final Note note;
 	private final Model model;
 
@@ -41,11 +55,13 @@ class NoteView extends SimplePanel implements Note.Observer, MouseUpHandler,
 			.create(ImageService.class);
 	private final TextArea content = new TextArea();
 
-
 	private Image image = new Image();
 	private SingleUploader uploader = new SingleUploader();
 	private Hidden uploaderNoteKey = new Hidden("noteKey");
-	private Button rotateButton = new Button("Rotate Image");
+	private Button rotateButton = new Button("Rotate");;
+    private Button flipHButton = new Button("Flip Horizontally");;
+	private Button flipVButton = new Button("Flip Vertically");;
+	private Button deletNoteButton = new Button("X");
 
     private final CellList<Comment> comments = new CellList<Comment>(new CommentCell());
     private Button newCommentButton = new Button("Add Comment");
@@ -74,7 +90,7 @@ class NoteView extends SimplePanel implements Note.Observer, MouseUpHandler,
 		this.callback = callback;
 		this.model = model;
 		this.note = note;
-
+		image.setSize("200px", "200px");
 		setStyleName("note");
 		note.setObserver(this);
 
@@ -83,31 +99,30 @@ class NoteView extends SimplePanel implements Note.Observer, MouseUpHandler,
 		elem.getStyle().setProperty("position", "absolute");
 		titleElement = elem.appendChild(Document.get().createDivElement());
 		titleElement.setClassName("note-title");
+        VerticalPanel mainPanel = new VerticalPanel();
 
-		// Create Upload widget
-		uploader.add(uploaderNoteKey);
-		uploader.setServletPath("/sticky/imageUpload");
-		uploader.addOnFinishUploadHandler(this);
-		uploader.setVisible(!note.hasImage());
-		uploaderNoteKey.setValue(note.getKey());
+        mainPanel.add(deletNoteButton);
+        mainPanel.add(image);
+        mainPanel.add(content);
+        mainPanel.add(uploader);
 
-		VerticalPanel mainPanel = new VerticalPanel();
-		mainPanel.add(image);
-		mainPanel.add(content);
+        mainPanel.add(createUploadEditWidgets(note));
+        mainPanel.add(createCommentWidgets(note));
 
 		content.setStyleName("note-content");
 		content.addValueChangeHandler(this);
 
-        comments.setStyleName("note-comments");
+		setWidget(mainPanel);
 
-        HorizontalPanel editPanel = new HorizontalPanel();
-        mainPanel.add(editPanel);
+		render();
 
-        editPanel.add(uploader);
-		editPanel.add(rotateButton);
+		addDomHandler(this, MouseDownEvent.getType());
+		addDomHandler(this, MouseMoveEvent.getType());
+		addDomHandler(this, MouseUpEvent.getType());
+	}
 
+    private DisclosurePanel createCommentWidgets(Note note) {
         DisclosurePanel commentPanel = new DisclosurePanel("Comments");
-        mainPanel.add(commentPanel);
 
         comments.setRowCount(note.getComments().length, true);
         comments.setRowData(0, Arrays.asList(note.getComments()));
@@ -126,41 +141,65 @@ class NoteView extends SimplePanel implements Note.Observer, MouseUpHandler,
             }
         });
 
-        rotateButton.setVisible(note.hasImage());
+        return commentPanel;
+    }
+
+    private Panel createUploadEditWidgets(Note note) {// Create Upload widget
+        uploader.add(uploaderNoteKey);
+        uploader.setServletPath("/sticky/imageUpload");
+        uploader.addOnFinishUploadHandler(this);
+        uploader.setVisible(!note.hasImage());
+        uploaderNoteKey.setValue(note.getKey());
+
+        deletNoteButton.addClickHandler(new ClickHandler() {
+
+            @Override
+            public void onClick(ClickEvent event) {
+                NoteView.this.callback.delete(NoteView.this.note);
+            }
+        });
+
+        HorizontalPanel horizontalPanel = new HorizontalPanel();
+
         rotateButton.addClickHandler(new ClickHandler() {
 
-			@Override
-			public void onClick(ClickEvent event) {
+            @Override
+            public void onClick(ClickEvent event) {
 
-				imageService.rotateImage(NoteView.this.note.getKey(), 90,
-						new AsyncCallback<Void>() {
+                imageService.rotateImage(NoteView.this.note.getKey(), 90,
+                        new DefaultImageManipulationCallback());
+            }
+        });
 
-							@Override
-							public void onFailure(Throwable caught) {
-								System.out.println("can't rotate image "
-										+ caught.getMessage());
-							}
+        flipHButton.addClickHandler(new ClickHandler() {
 
-							@Override
-							public void onSuccess(Void result) {
-								image.setUrl(image.getUrl()+"=reload="+Math.random());
-								render();
+            @Override
+            public void onClick(ClickEvent event) {
+                imageService.flipImage(NoteView.this.note.getKey(),
+                        ImageService.Flip.H,
+                        new DefaultImageManipulationCallback());
+            }
 
-							}
-						});
-			}
-		});
+        });
 
-		setWidget(mainPanel);
+        flipVButton.addClickHandler(new ClickHandler() {
 
-		render();
+            @Override
+            public void onClick(ClickEvent event) {
+                imageService.flipImage(NoteView.this.note.getKey(),
+                        ImageService.Flip.V,
+                        new DefaultImageManipulationCallback());
+            }
+        });
 
-		addDomHandler(this, MouseDownEvent.getType());
-		addDomHandler(this, MouseMoveEvent.getType());
-		addDomHandler(this, MouseUpEvent.getType());
-	}
+        horizontalPanel.add(rotateButton);
+        horizontalPanel.add(flipHButton);
+        horizontalPanel.add(flipVButton);
 
-	public void onMouseDown(MouseDownEvent event) {
+        return horizontalPanel;
+    }
+
+    public void onMouseDown(MouseDownEvent event) {
 		callback.select(this);
 		if (!note.isOwnedByCurrentUser()) {
 			return;
@@ -182,6 +221,9 @@ class NoteView extends SimplePanel implements Note.Observer, MouseUpHandler,
 		}
 	}
 
+	public Note getNote() {
+		return note;
+	}
 	public void onMouseMove(MouseMoveEvent event) {
 		if (dragging) {
 			setPixelPosition(event.getX() + getAbsoluteLeft() - dragOffsetX,
@@ -196,7 +238,7 @@ class NoteView extends SimplePanel implements Note.Observer, MouseUpHandler,
 			DOM.releaseCapture(getElement());
 			event.preventDefault();
 			model.updateNotePosition(note, getAbsoluteLeft(), getAbsoluteTop(),
-					note.getWidth(), note.getHeight());
+                    note.getWidth(), note.getHeight());
 		}
 	}
 
@@ -277,5 +319,10 @@ class NoteView extends SimplePanel implements Note.Observer, MouseUpHandler,
 	@Override
 	public void onResponse(boolean success) {
 		model.getImageUrlForNote(note);
+	}
+
+	private void forceImageReload() {
+		image.setUrl(image.getUrl() + "=reload=" + Math.random());
+		render();
 	}
 }
