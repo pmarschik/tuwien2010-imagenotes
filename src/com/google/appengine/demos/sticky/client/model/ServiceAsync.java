@@ -34,6 +34,9 @@ public interface ServiceAsync {
     void addAuthorToSurface(String surfaceKey, String email,
                             AsyncCallback<Service.AddAuthorToSurfaceResult> callback);
 
+    void addCommentToNote(String noteKey, String content,
+                          AsyncCallback<Service.AddCommentToNoteResult> async);
+
     /**
      * @param noteKey
      * @param content
@@ -99,4 +102,6 @@ public interface ServiceAsync {
     void getUserInfo(AsyncCallback<Service.UserInfoResult> callback);
 
 	void getNote(String noteKey, AsyncCallback<GetNoteResult> callback);
+
+
 }

@@ -439,6 +439,33 @@ public class Model {
         }
     }
 
+    private class AddCommentToNoteTask extends Task implements AsyncCallback<Service.AddCommentToNoteResult> {
+
+        private final Note note;
+        private final String comment;
+
+        private AddCommentToNoteTask(Note note, String comment) {
+            this.note = note;
+            this.comment = comment;
+        }
+
+        @Override
+        public void onFailure(Throwable caught) {
+            getQueue().taskFailed(this, caught instanceof Service.AccessDeniedException);
+        }
+
+        @Override
+        public void onSuccess(Service.AddCommentToNoteResult result) {
+            note.update(result.getUpdatedAt());
+            getQueue().taskSucceeded(this);
+        }
+
+        @Override
+        void execute() {
+            api.addCommentToNote(note.getKey(), comment, this);
+        }
+    }
+
     /**
      * The period to use, in millisconds, for polling for updates to notes on the
      * currently selected surface.
@@ -668,6 +695,10 @@ public class Model {
      */
     public void updateNoteContent(final Note note, String content) {
         taskQueue.post(new UpdateNoteContentTask(note, content));
+    }
+
+    public void addCommentToNote(final Note note, final String comment) {
+        taskQueue.post(new AddCommentToNoteTask(note, comment));
     }
 
     /**

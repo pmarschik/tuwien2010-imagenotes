@@ -75,6 +75,8 @@ public class Note implements Serializable {
      */
     private boolean hasImage;
 
+    private Comment[] comments;
+
     /**
      * An observer to receive callbacks whenever this {@link Note} is updated.
      */
@@ -101,6 +103,7 @@ public class Note implements Serializable {
         this.width = width;
         this.height = height;
         this.hasImage = false;
+        this.comments = new Comment[0];
         ownedByCurrentUser = true;
     }
 
@@ -115,10 +118,10 @@ public class Note implements Serializable {
      * @param content
      * @param lastUpdatedAt
      * @param authorName
-     * @param ownedByCurrentUser
+     * @param comments
      */
     public Note(String key, int x, int y, int width, int height, String content,
-                Date lastUpdatedAt, String authorName, String authorEmail, boolean hasImage) {
+                Date lastUpdatedAt, String authorName, String authorEmail, boolean hasImage, Comment[] comments) {
         assert !GWT.isClient();
         this.key = key;
         this.x = x;
@@ -130,6 +133,7 @@ public class Note implements Serializable {
         this.authorName = authorName;
         this.authorEmail = authorEmail;
         this.hasImage = hasImage;
+        this.comments = comments;
     }
 
     /**
@@ -159,7 +163,10 @@ public class Note implements Serializable {
     public Date getLastUpdatedAt() {
         return lastUpdatedAt;
     }
-    
+
+    public Comment[] getComments() {
+        return comments;
+    }
 
     /**
      * Gets the observer that is receiving notification when the note is modified.
@@ -261,7 +268,7 @@ public class Note implements Serializable {
     Note update(Note note) { 
     	if(note.hasImage) {
     		//die zeile verursacht das verschwinden der bilder nach dem ersten update
-    		//TODO: brauchen wir das? die image url wird sich ja nicht mehr ändern oder?
+    		//TODO: brauchen wir das? die image url wird sich ja nicht mehr aendern oder?
         	//imageUrl = note.imageUrl;
         	observer.onImageUpdate(this);
         }
@@ -276,6 +283,7 @@ public class Note implements Serializable {
             ownedByCurrentUser = note.ownedByCurrentUser;
             authorName = note.authorName;
             lastUpdatedAt = note.lastUpdatedAt;
+            comments = note.comments;
             observer.onUpdate(this);
         }
                 

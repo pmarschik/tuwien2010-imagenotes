@@ -15,26 +15,16 @@
 
 package com.google.appengine.demos.sticky.server;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
-import javax.jdo.JDOHelper;
-import javax.jdo.JDOObjectNotFoundException;
-import javax.jdo.PersistenceManager;
-import javax.jdo.PersistenceManagerFactory;
-import javax.jdo.Transaction;
-import javax.jdo.annotations.Element;
-import javax.jdo.annotations.IdGeneratorStrategy;
-import javax.jdo.annotations.IdentityType;
-import javax.jdo.annotations.PersistenceCapable;
-import javax.jdo.annotations.Persistent;
-import javax.jdo.annotations.PrimaryKey;
-
 import com.google.appengine.api.datastore.Blob;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.users.User;
+
+import javax.jdo.*;
+import javax.jdo.annotations.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 /**
  * An application specific Api wrapper around the {@link DatastoreService}.
@@ -105,6 +95,10 @@ public class Store {
             return manager.getObjectById(Note.class, key);
         }
 
+        public Comment getComment(Key key) {
+            return manager.getObjectById(Comment.class, key);
+        }
+
         /**
          * Looks in the data store for an author with a matching email. If the
          * author does not exist, a new one will be created. The newly created
@@ -166,6 +160,10 @@ public class Store {
         public Note saveNote(Note note) {
             note.lastUpdatedAt = new Date();
             return manager.makePersistent(note);
+        }
+
+        public Comment saveComment(Comment comment) {
+            return manager.makePersistent(comment);
         }
 
         /**
@@ -314,8 +312,60 @@ public class Store {
         }
     }
 
+    @PersistenceCapable(identityType = IdentityType.APPLICATION)
     public static class Comment {
+        /**
+         * An auto-generated primary key.
+         */
+        @PrimaryKey
+        @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
+        private Key key;
 
+        @Persistent
+        private String authorEmail;
+
+        @Persistent
+        private String authorName;
+
+        @Persistent
+        private String text;
+
+        public Comment(Author owner, String text) {
+            this.text = text;
+            authorEmail = owner.getEmail();
+            authorName = owner.getName();
+        }
+
+        public void setText(String text) {
+            this.text = text;
+        }
+
+        public Key getKey() {
+
+            return key;
+        }
+
+        public String getAuthorEmail() {
+            return authorEmail;
+        }
+
+        public String getAuthorName() {
+            return authorName;
+        }
+
+        public String getText() {
+            return text;
+        }
+        /**
+         * Indicates whether the given author is the owner of this note.
+         *
+         * @param author the author
+         * @return <code>true</code> if <code>author</code> is the owner of the
+         *         note, <code>false</code> otherwise.
+         */
+        public boolean isOwnedBy(Author author) {
+            return author.getEmail().equals(authorEmail);
+        }
     }
 
     /**
@@ -397,6 +447,9 @@ public class Store {
         
         @Persistent
         private String contentType;
+
+        @Element(dependent = "true")
+        private List<Comment> comments = new ArrayList<Comment>();
 
         /**
          * Create a new note.
@@ -509,6 +562,10 @@ public class Store {
             return author.getEmail().equals(authorEmail);
         }
 
+        public List<Comment> getComments() {
+            return comments;
+        }
+
         /**
          * Sets the content.
          *
@@ -554,23 +611,22 @@ public class Store {
             this.y = y;
         }
 
-		public void setImageData(Blob imageData) {
-			this.imageData = imageData;
-		}
+        public void setImageData(Blob imageData) {
+            this.imageData = imageData;
+        }
 
-		public Blob getImageData() {
-			return imageData;
-		}
+        public Blob getImageData() {
+            return imageData;
+        }
 
-		public void setContentType(String contentType) {
-			this.contentType = contentType;
-		}
+        public void setContentType(String contentType) {
+            this.contentType = contentType;
+        }
 
-		public String getContentType() {
-			return contentType;
-		}
+        public String getContentType() {
+            return contentType;
+        }
 
-		
     }
 
     /**
@@ -709,7 +765,7 @@ public class Store {
     }
     
     public static Store getInstance() {
-    	return instance;
+        return instance;
     }
 
     /**

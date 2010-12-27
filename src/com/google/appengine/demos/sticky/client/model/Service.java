@@ -87,6 +87,27 @@ public interface Service extends RemoteService {
         }
     }
 
+    static class AddCommentToNoteResult implements Serializable {
+        private String Content;
+        private Date updatedAt;
+
+        public AddCommentToNoteResult(String content, Date updatedAt) {
+            Content = content;
+            this.updatedAt = updatedAt;
+        }
+
+        public AddCommentToNoteResult() {
+        }
+
+        public String getContent() {
+            return Content;
+        }
+
+        public Date getUpdatedAt() {
+            return updatedAt;
+        }
+    }
+
     /**
      * Encapsulates a response from
      * {@link Service#createNote(user, int, int, int, int)}.
@@ -345,6 +366,9 @@ public interface Service extends RemoteService {
      */
     AddAuthorToSurfaceResult addAuthorToSurface(String surfaceKey, String email)
             throws AccessDeniedException;
+
+    AddCommentToNoteResult addCommentToNote(String noteKey, String content)
+        throws AccessDeniedException;
 
     /**
      * Updates the content of a {@link Note}.

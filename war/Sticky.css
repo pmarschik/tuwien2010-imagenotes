@@ -138,17 +138,21 @@ body {
     overflow: auto;
 }
 
+.note-comments {
+/* TODO style? */
+}
 /* surface list */
 .surface-list {
     position: absolute;
     top: 65px;
     left: 10px;
     z-index: 5;
-    background-color: #666; /* IE needs this redundancy */
-    width: 508px;
+background-color: #666; /* IE needs this redundancy */
+width: 508px;
     -webkit-border-radius: 5px;
     -moz-border-radius: 5px;
 }
+
 
 .surface-list-title {
     padding: 5px 10px;

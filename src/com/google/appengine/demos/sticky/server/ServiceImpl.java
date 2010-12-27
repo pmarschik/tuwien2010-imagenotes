@@ -21,15 +21,11 @@ import com.google.appengine.api.memcache.MemcacheServiceFactory;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
-import com.google.appengine.demos.sticky.client.model.Author;
-import com.google.appengine.demos.sticky.client.model.Note;
-import com.google.appengine.demos.sticky.client.model.Service;
-import com.google.appengine.demos.sticky.client.model.Surface;
+import com.google.appengine.demos.sticky.client.model.*;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 import javax.jdo.Transaction;
 import javax.servlet.http.HttpServletRequest;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -85,9 +81,17 @@ public class ServiceImpl extends RemoteServiceServlet implements Service {
         int i = 0;
                 
         for (Store.Note n : notes) {
+            Comment[] comments = new Comment[n.getComments().size()];
+            int j = 0;
+
+            for(Store.Comment comment : n.getComments()) {
+                comments[j++] = new Comment(KeyFactory.keyToString(comment.getKey()), new Author(
+                        comment.getAuthorEmail(),  comment.getAuthorName()), comment.getText());
+            }
+
             clients[i++] = new Note(KeyFactory.keyToString(n.getKey()), n.getX(), n
                     .getY(), n.getWidth(), n.getHeight(), n.getContent(), n
-                    .getLastUpdatedAt(), n.getAuthorName(), n.getAuthorEmail(), n.getImageData()!=null);
+                    .getLastUpdatedAt(), n.getAuthorName(), n.getAuthorEmail(), n.getImageData()!=null, comments);
         }
         return clients;
     }
@@ -185,6 +189,47 @@ public class ServiceImpl extends RemoteServiceServlet implements Service {
             return new AddAuthorToSurfaceResult(author.getName(), surface
                     .getLastUpdatedAt());
 
+        } finally {
+            api.close();
+        }
+    }
+
+    @Override
+    public AddCommentToNoteResult addCommentToNote(String strNoteKey, String content)
+            throws AccessDeniedException {
+        final User user = tryGetCurrentUser(UserServiceFactory.getUserService());
+        final Store.Api api = store.getApi();
+        try {
+        	//Invitation Mailer
+        	InvitationMailer mailer = new InvitationMailer();
+        	//Get URL to your site
+        	HttpServletRequest request = getThreadLocalRequest();
+        	String url = "http://";
+    		url += request.getServerName();
+    		url += ":" + request.getServerPort();
+
+            final Key noteKey = KeyFactory.stringToKey(strNoteKey);
+            final Store.Note note = api.getNote(noteKey);
+
+            final Key surfaceKey = KeyFactory.stringToKey(getSurfaceKey(note));
+            //final Store.Surface surface = api.getSurface(surfaceKey);
+
+            final Store.Author me = api.getOrCreateNewAuthor(user);
+
+            // Verify that author has access to the surface that is being changed.
+            if (!me.hasSurface(surfaceKey)) {
+                throw new Service.AccessDeniedException();
+            }
+
+            Store.Comment comment = new Store.Comment(me, content);
+
+            final Transaction tx = api.begin();
+            note.getComments().add(comment);
+            api.saveComment(comment);
+            Date lastUpdate = api.saveNote(note).getLastUpdatedAt();
+            tx.commit();
+
+            return new AddCommentToNoteResult(content, lastUpdate);
         } finally {
             api.close();
         }
@@ -407,9 +452,18 @@ public class ServiceImpl extends RemoteServiceServlet implements Service {
             final Key key = KeyFactory.stringToKey(noteKey);
             
             final Store.Note n = api.getNote(key);
+
+            Comment[] comments = new Comment[n.getComments().size()];
+            int j = 0;
+
+            for(Store.Comment comment : n.getComments()) {
+                comments[j++] = new Comment(KeyFactory.keyToString(comment.getKey()), new Author(
+                        comment.getAuthorEmail(),  comment.getAuthorName()), comment.getText());
+            }
+
             final Note note = new Note(KeyFactory.keyToString(n.getKey()), n.getX(), n
                     .getY(), n.getWidth(), n.getHeight(), n.getContent(), new Date(),
-                    n.getAuthorName(), n.getAuthorEmail(), n.getImageData()!=null);
+                    n.getAuthorName(), n.getAuthorEmail(), n.getImageData()!=null, comments);
             cache.deleteNotes(getSurfaceKey(n));
             return new GetNoteResult(note);
         } finally {
