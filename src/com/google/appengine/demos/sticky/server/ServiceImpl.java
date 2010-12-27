@@ -229,7 +229,9 @@ public class ServiceImpl extends RemoteServiceServlet implements Service {
             Date lastUpdate = api.saveNote(note).getLastUpdatedAt();
             tx.commit();
 
-            return new AddCommentToNoteResult(content, lastUpdate);
+            cache.deleteNotes(getSurfaceKey(note));
+
+            return new AddCommentToNoteResult(content, me.getName(), me.getEmail(), lastUpdate);
         } finally {
             api.close();
         }
@@ -476,8 +478,8 @@ public class ServiceImpl extends RemoteServiceServlet implements Service {
 		final Store.Api api = store.getApi();
 	    try {
 	        final Key key = KeyFactory.stringToKey(noteKey);
+            api.removeNote(key);
             cache.deleteNotes(getSurfaceKey(api.getNote(key)));
-			api.removeNote(key);
 		} finally {
 	        api.close();
 	    }	

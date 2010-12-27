@@ -456,6 +456,11 @@ public class Model {
 
         @Override
         public void onSuccess(Service.AddCommentToNoteResult result) {
+            Author commentAuthor = new Author(result.getAuthorEmail(), result.getAuthorName());
+            Comment newComment = new Comment(commentAuthor, result.getContent());
+            note.addComment(newComment);
+            note.update(note);
+            // this needs to be updated to display changes on another client
             note.update(result.getUpdatedAt());
             getQueue().taskSucceeded(this);
         }

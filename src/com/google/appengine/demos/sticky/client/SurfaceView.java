@@ -101,7 +101,7 @@ public class SurfaceView extends FlowPanel implements Model.DataObserver {
 			NoteView noteW;
 			for (final Widget widget : kids) {
 				noteW=(NoteView) widget;
-				if (noteW.getNote().getKey()==note.getKey()) {
+				if (noteW.getNote().getKey().equals(note.getKey())) {
 					//remove note
 					ServiceAsync service = GWT.create(Service.class);
 					service.deleteNote(note.getKey(), new AsyncCallback<Void>() {

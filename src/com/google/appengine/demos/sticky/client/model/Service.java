@@ -89,10 +89,14 @@ public interface Service extends RemoteService {
 
     static class AddCommentToNoteResult implements Serializable {
         private String Content;
+        private String authorName;
+        private String authorEmail;
         private Date updatedAt;
 
-        public AddCommentToNoteResult(String content, Date updatedAt) {
+        public AddCommentToNoteResult(String content, String authorName, String authorEmail, Date updatedAt) {
             Content = content;
+            this.authorName = authorName;
+            this.authorEmail = authorEmail;
             this.updatedAt = updatedAt;
         }
 
@@ -105,6 +109,14 @@ public interface Service extends RemoteService {
 
         public Date getUpdatedAt() {
             return updatedAt;
+        }
+
+        public String getAuthorName() {
+            return authorName;
+        }
+
+        public String getAuthorEmail() {
+            return authorEmail;
         }
     }
 

@@ -18,7 +18,10 @@ package com.google.appengine.demos.sticky.client.model;
 import com.google.gwt.core.client.GWT;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 /**
  * A client side data object representing a Sticky note.
@@ -28,7 +31,9 @@ public class Note implements Serializable {
 
     public interface Observer {
         void onUpdate(Note note);
+
         void onNoteKeySuccessfullySet(Note note);
+
         void onImageUpdate(Note note);
     }
 
@@ -64,14 +69,14 @@ public class Note implements Serializable {
     private String authorName;
 
     private String authorEmail;
-        
+
     /**
      * The url for the image
      */
     private String imageUrl;
-    
+
     /**
-     * 
+     *
      */
     private boolean hasImage;
 
@@ -86,6 +91,8 @@ public class Note implements Serializable {
      * Indicates whether a sticky is editable by the current author.
      */
     private transient boolean ownedByCurrentUser;
+
+    private transient boolean commentAdded;
 
     /**
      * A constructor to be used on client-side only.
@@ -233,6 +240,13 @@ public class Note implements Serializable {
         this.y = y;
     }
 
+    public void addComment(Comment comment) {
+        List<Comment> commentList = new ArrayList<Comment>(Arrays.asList(comments));
+        commentList.add(comment);
+        comments = commentList.toArray(comments);
+        commentAdded = true;
+    }
+
     /**
      * Initializes transient data structures in the object. This will be called
      * directly by the controlling model when the note is first received.
@@ -242,10 +256,10 @@ public class Note implements Serializable {
     void initialize(Model model) {
         ownedByCurrentUser = model.getCurrentAuthor().getEmail()
                 .equals(authorEmail);
-        if(hasImage)
-        	model.getImageUrlForNote(this);
+        if (hasImage)
+            model.getImageUrlForNote(this);
     }
-    
+
     /**
      * Invoked when the note has been saved to the server.
      *
@@ -265,14 +279,15 @@ public class Note implements Serializable {
      * @param note a note containing up-to-date information about <code>this</code>
      * @return <code>this</code>, for chaining purposes
      */
-    Note update(Note note) { 
-    	if(note.hasImage) {
-    		//die zeile verursacht das verschwinden der bilder nach dem ersten update
-    		//TODO: brauchen wir das? die image url wird sich ja nicht mehr aendern oder?
-        	//imageUrl = note.imageUrl;
-        	observer.onImageUpdate(this);
+    Note update(Note note) {
+        if (note.hasImage) {
+            //die zeile verursacht das verschwinden der bilder nach dem ersten update
+            //TODO: brauchen wir das? die image url wird sich ja nicht mehr aendern oder?
+            //imageUrl = note.imageUrl;
+            observer.onImageUpdate(this);
         }
-        if (!note.getLastUpdatedAt().equals(lastUpdatedAt)) {
+
+        if (!note.getLastUpdatedAt().equals(lastUpdatedAt) || commentAdded) {
             key = note.key;
             surfaceKey = note.surfaceKey;
             x = note.x;
@@ -284,9 +299,10 @@ public class Note implements Serializable {
             authorName = note.authorName;
             lastUpdatedAt = note.lastUpdatedAt;
             comments = note.comments;
+            commentAdded = false;
             observer.onUpdate(this);
         }
-                
+
         return this;
     }
 
@@ -297,20 +313,20 @@ public class Note implements Serializable {
         observer.onNoteKeySuccessfullySet(this);
         return this;
     }
-	
-	public void setImageUrl(String imageUrl) {
-		this.imageUrl = imageUrl;
-	}
-	
-	public String getImageUrl() {
-		return imageUrl;
-	}
-	
-	public boolean hasImage() {
-		return hasImage;
-	}
-	
-	public void setHasImage(boolean hasImage) {
-		this.hasImage = hasImage;
-	}
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public boolean hasImage() {
+        return hasImage;
+    }
+
+    public void setHasImage(boolean hasImage) {
+        this.hasImage = hasImage;
+    }
 }
