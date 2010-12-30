@@ -34,8 +34,8 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DisclosurePanel;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.Hidden;
-import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.PopupPanel;
@@ -51,317 +51,308 @@ import com.google.gwt.user.client.ui.VerticalPanel;
  * {@link Surface}.
  */
 
-class NoteView extends SimplePanel implements Note.Observer, MouseUpHandler,
-        MouseDownHandler, MouseMoveHandler, Model.SuccessCallback,
-        ValueChangeHandler<String>, IUploader.OnFinishUploaderHandler {
-    private final class DefaultImageManipulationCallback implements
-            AsyncCallback<Void> {
-        @Override
-        public void onFailure(Throwable caught) {
-            System.out.println("can't perform image manipulation " + caught.getMessage());
-        }
+class NoteView extends SimplePanel implements Note.Observer, MouseUpHandler, MouseDownHandler, MouseMoveHandler, Model.SuccessCallback,
+		ValueChangeHandler<String>, IUploader.OnFinishUploaderHandler {
+	private final class DefaultImageManipulationCallback implements AsyncCallback<Void> {
+		@Override
+		public void onFailure(Throwable caught) {
+			System.out.println("can't perform image manipulation " + caught.getMessage());
+		}
 
-        @Override
-        public void onSuccess(Void result) {
-            forceImageReload();
+		@Override
+		public void onSuccess(Void result) {
+			forceImageReload();
 
-        }
-    }
+		}
+	}
 
-    private final Note note;
-    private final Model model;
+	private final Note note;
+	private final Model model;
 
-    private final DivElement titleElement;
+	private final DivElement titleElement;
 
-    private final ImageServiceAsync imageService = GWT
-            .create(ImageService.class);
-    private final TextArea content = new TextArea();
+	private final ImageServiceAsync imageService = GWT.create(ImageService.class);
 
-    private static Image image = new Image();
-    private static Image popupImage;
-    private SingleUploader uploader = new SingleUploader();
-    private Hidden uploaderNoteKey = new Hidden("noteKey");
-    private Button rotateButton = new Button("Rotate");
-    private Button flipHButton = new Button("Flip Horizontally");
-    private Button flipVButton = new Button("Flip Vertically");
-    private Button deletNoteButton = new Button("X");
+	private Image image = new Image();
+	private Image popupImage;
+	private SingleUploader uploader = new SingleUploader();
+	private Hidden uploaderNoteKey = new Hidden("noteKey");
+	private Button rotateButton = new Button("Rotate");
+	private Button flipHButton = new Button("Flip Horizontally");
+	private Button flipVButton = new Button("Flip Vertically");
+	private Button deletNoteButton = new Button("Delete Note");
 
-    private final CellList<Comment> comments = new CellList<Comment>(new CommentCell());
-    private Button newCommentButton = new Button("Add Comment");
-    private TextArea newCommentContent = new TextArea();
+	private final CellList<Comment> comments = new CellList<Comment>(new CommentCell());
+	private Button newCommentButton = new Button("Add Comment");
+	private TextArea newCommentContent = new TextArea();
 
-    // Dragging state.
-    private boolean dragging;
+	// Dragging state.
+	private boolean dragging;
 
-    private int dragOffsetX, dragOffsetY;
-    private NoteSelectionCallback callback;
+	private int dragOffsetX, dragOffsetY;
+	private NoteSelectionCallback callback;
 
-    private static class CommentCell extends AbstractCell<Comment> {
+	private static class CommentCell extends AbstractCell<Comment> {
 
-        @Override
-        public void render(Comment value, Object key, SafeHtmlBuilder sb) {
-            sb.appendEscapedLines(value.getAuthor().getShortName() + ": ");
-            sb.appendEscaped(value.getContent());
-        }
-    }
-    
-    private static class ImagePopUp extends PopupPanel{
-    	
-    	public ImagePopUp() {
+		@Override
+		public void render(Comment value, Object key, SafeHtmlBuilder sb) {
+			sb.appendEscapedLines(value.getAuthor().getShortName() + ": ");
+			sb.appendEscaped(value.getContent());
+		}
+	}
+
+	private class ImagePopUp extends PopupPanel {
+
+		public ImagePopUp() {
 			super(true);
-			if (popupImage==null) {
-				popupImage= new Image();
-				popupImage.setHeight(String.valueOf(Window.getClientHeight()-200) + "px");
+			if (popupImage == null) {
+				popupImage = new Image();
+				popupImage.setHeight(String.valueOf(350) + "px");
 			}
 
-    		popupImage.setUrl(image.getUrl()+ "=reload=" + Math.random());
+			popupImage.setUrl(image.getUrl() + "=reload=" + Math.random());
 			popupImage.getElement().getStyle().setProperty("zIndex", "" + "99999999999");
 			popupImage.getElement().getStyle().setProperty("position", "relative");
-			
-    		setWidget(popupImage);
-		}
-    }
 
-    /**
-     * @param note the note to render
-     */
-    public NoteView(final Note note, Model model, NoteSelectionCallback callback) {
-        this.callback = callback;
-        this.model = model;
-        this.note = note;
-        image.setSize("200px", "200px");
-        image.addClickHandler(new ClickHandler() {
-			
+			setWidget(popupImage);
+		}
+	}
+
+	/**
+	 * @param note
+	 *            the note to render
+	 */
+	public NoteView(final Note note, Model model, NoteSelectionCallback callback) {
+		this.callback = callback;
+		this.model = model;
+		this.note = note;
+		image.setWidth("225px");
+		image.setStyleName("picture");
+		image.addClickHandler(new ClickHandler() {
+
 			@Override
 			public void onClick(ClickEvent event) {
-				 final ImagePopUp popup = new ImagePopUp();
-			        popup.setPopupPositionAndShow(new PopupPanel.PositionCallback() {
-			          public void setPosition(int offsetWidth, int offsetHeight) {
-			            int left = (Window.getClientWidth() - offsetWidth) / 3;
-			            int top = (Window.getClientHeight() - offsetHeight) / 3;
-			            popup.setPopupPosition(left, top);
-			          }
-			        });
+				final ImagePopUp popup = new ImagePopUp();
+				popup.setPopupPositionAndShow(new PopupPanel.PositionCallback() {
+					public void setPosition(int offsetWidth, int offsetHeight) {
+						int left = (Window.getClientWidth() - offsetWidth) / 3;
+						int top = (Window.getClientHeight() - offsetHeight) / 3;
+						popup.setPopupPosition(left, top);
+					}
+				});
 			}
 		});
-        setStyleName("note");
-        note.setObserver(this);
+		setStyleName("note");
+		note.setObserver(this);
 
-        // Build simple DOM Structure.
-        final Element elem = getElement();
-        elem.getStyle().setProperty("position", "absolute");
-        titleElement = elem.appendChild(Document.get().createDivElement());
-        titleElement.setClassName("note-title");
-        VerticalPanel mainPanel = new VerticalPanel();
+		// Build simple DOM Structure.
+		final Element elem = getElement();
+		elem.getStyle().setProperty("position", "absolute");
+		titleElement = elem.appendChild(Document.get().createDivElement());
+		titleElement.setClassName("note-title");
+		VerticalPanel mainPanel = new VerticalPanel();
 
-        mainPanel.add(deletNoteButton);
-        mainPanel.add(image);
-        mainPanel.add(content);
-        mainPanel.add(uploader);
+		uploader.setStyleName("upload");
+		mainPanel.add(image);
 
-        mainPanel.add(createUploadEditWidgets(note));
-        mainPanel.add(createCommentWidgets(note));
+		if (!note.hasImage()) {
+			mainPanel.add(uploader);
+		}
 
-        content.setStyleName("note-content");
-        content.addValueChangeHandler(this);
+		if (note.isOwnedByCurrentUser()) {
+			mainPanel.add(createUploadEditWidgets(note));
+		}
 
-        setWidget(mainPanel);
+		mainPanel.add(createCommentWidgets(note));
 
-        render();
+		setWidget(mainPanel);
 
-        addDomHandler(this, MouseDownEvent.getType());
-        addDomHandler(this, MouseMoveEvent.getType());
-        addDomHandler(this, MouseUpEvent.getType());
-    }
+		render();
 
-    private DisclosurePanel createCommentWidgets(Note note) {
-        DisclosurePanel commentPanel = new DisclosurePanel("Comments");
+		addDomHandler(this, MouseDownEvent.getType());
+		addDomHandler(this, MouseMoveEvent.getType());
+		addDomHandler(this, MouseUpEvent.getType());
+	}
 
-        VerticalPanel commentsPanel = new VerticalPanel();
-        commentPanel.setContent(commentsPanel);
-        commentsPanel.add(comments);
-        commentsPanel.add(newCommentContent);
-        commentsPanel.add(newCommentButton);
+	private DisclosurePanel createCommentWidgets(Note note) {
+		DisclosurePanel commentPanel = new DisclosurePanel("Comments");
 
-        newCommentContent.setText("Add comment ...");
-        newCommentButton.addClickHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-                NoteView.this.model.addCommentToNote(NoteView.this.note, newCommentContent.getText());
-                render();
-            }
-        });
+		VerticalPanel commentsPanel = new VerticalPanel();
+		commentsPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+		commentPanel.setStyleName("commentpanel");
+		commentPanel.setContent(commentsPanel);
+		commentsPanel.add(comments);
+		commentsPanel.add(newCommentContent);
+		commentsPanel.add(newCommentButton);
+		comments.setStyleName("comments");
 
-        return commentPanel;
-    }
+		newCommentContent.setText("Add comment ...");
+		newCommentButton.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				NoteView.this.model.addCommentToNote(NoteView.this.note, newCommentContent.getText());
+				render();
+			}
+		});
+		newCommentButton.setStyleName("commentaction");
 
-    private Panel createUploadEditWidgets(Note note) {
-        uploader.add(uploaderNoteKey);
-        uploader.setServletPath("/sticky/imageUpload");
-        uploader.addOnFinishUploadHandler(this);
-        uploader.setVisible(!note.hasImage());
-        uploaderNoteKey.setValue(note.getKey());
+		return commentPanel;
+	}
 
-        deletNoteButton.addClickHandler(new ClickHandler() {
+	private Panel createUploadEditWidgets(Note note) {
+		uploader.add(uploaderNoteKey);
+		uploader.setServletPath("/sticky/imageUpload");
+		uploader.addOnFinishUploadHandler(this);
+		uploader.setVisible(!note.hasImage());
+		uploaderNoteKey.setValue(note.getKey());
 
-            @Override
-            public void onClick(ClickEvent event) {
-                NoteView.this.callback.delete(NoteView.this.note);
-            }
-        });
+		deletNoteButton.addClickHandler(new ClickHandler() {
 
-        HorizontalPanel horizontalPanel = new HorizontalPanel();
+			@Override
+			public void onClick(ClickEvent event) {
+				NoteView.this.callback.delete(NoteView.this.note);
+			}
+		});
 
-        rotateButton.addClickHandler(new ClickHandler() {
+		rotateButton.addClickHandler(new ClickHandler() {
 
-            @Override
-            public void onClick(ClickEvent event) {
+			@Override
+			public void onClick(ClickEvent event) {
 
-                imageService.rotateImage(NoteView.this.note.getKey(), 90,
-                        new DefaultImageManipulationCallback());
-            }
-        });
+				imageService.rotateImage(NoteView.this.note.getKey(), 90, new DefaultImageManipulationCallback());
+			}
+		});
 
-        flipHButton.addClickHandler(new ClickHandler() {
+		flipHButton.addClickHandler(new ClickHandler() {
 
-            @Override
-            public void onClick(ClickEvent event) {
-                imageService.flipImage(NoteView.this.note.getKey(),
-                        ImageService.Flip.H,
-                        new DefaultImageManipulationCallback());
-            }
+			@Override
+			public void onClick(ClickEvent event) {
+				imageService.flipImage(NoteView.this.note.getKey(), ImageService.Flip.H, new DefaultImageManipulationCallback());
+			}
 
-        });
+		});
 
-        flipVButton.addClickHandler(new ClickHandler() {
+		flipVButton.addClickHandler(new ClickHandler() {
 
-            @Override
-            public void onClick(ClickEvent event) {
-                imageService.flipImage(NoteView.this.note.getKey(),
-                        ImageService.Flip.V,
-                        new DefaultImageManipulationCallback());
-            }
-        });
+			@Override
+			public void onClick(ClickEvent event) {
+				imageService.flipImage(NoteView.this.note.getKey(), ImageService.Flip.V, new DefaultImageManipulationCallback());
+			}
+		});
 
-        horizontalPanel.add(rotateButton);
-        horizontalPanel.add(flipHButton);
-        horizontalPanel.add(flipVButton);
+		VerticalPanel horizontalPanel = new VerticalPanel();
+		horizontalPanel.setStyleName("actions");
 
-        return horizontalPanel;
-    }
+		horizontalPanel.add(rotateButton);
+		horizontalPanel.add(flipHButton);
+		horizontalPanel.add(flipVButton);
+		horizontalPanel.add(deletNoteButton);
 
-    public void onMouseDown(MouseDownEvent event) {
-        callback.select(this);
-        if (!note.isOwnedByCurrentUser()) {
-            return;
-        }
+		return horizontalPanel;
+	}
 
-        final EventTarget target = event.getNativeEvent().getEventTarget();
-        assert Element.is(target);
-        if (!Element.is(target)) {
-            return;
-        }
+	public void onMouseDown(MouseDownEvent event) {
+		callback.select(this);
+		if (!note.isOwnedByCurrentUser()) {
+			return;
+		}
 
-        if (titleElement.isOrHasChild(Element.as(target))) {
-            dragging = true;
-            final Element elem = getElement().cast();
-            dragOffsetX = event.getX();
-            dragOffsetY = event.getY();
-            DOM.setCapture(elem);
-            event.preventDefault();
-        }
-    }
+		final EventTarget target = event.getNativeEvent().getEventTarget();
+		assert Element.is(target);
+		if (!Element.is(target)) {
+			return;
+		}
 
-    public Note getNote() {
-        return note;
-    }
+		if (titleElement.isOrHasChild(Element.as(target))) {
+			dragging = true;
+			final Element elem = getElement().cast();
+			dragOffsetX = event.getX();
+			dragOffsetY = event.getY();
+			DOM.setCapture(elem);
+			event.preventDefault();
+		}
+	}
 
-    public void onMouseMove(MouseMoveEvent event) {
-        if (dragging) {
-            setPixelPosition(event.getX() + getAbsoluteLeft() - dragOffsetX,
-                    event.getY() + getAbsoluteTop() - dragOffsetY);
-            event.preventDefault();
-        }
-    }
+	public Note getNote() {
+		return note;
+	}
 
-    public void onMouseUp(MouseUpEvent event) {
-        if (dragging) {
-            dragging = false;
-            DOM.releaseCapture(getElement());
-            event.preventDefault();
-            model.updateNotePosition(note, getAbsoluteLeft(), getAbsoluteTop(),
-                    note.getWidth(), note.getHeight());
-        }
-    }
+	public void onMouseMove(MouseMoveEvent event) {
+		if (dragging) {
+			setPixelPosition(event.getX() + getAbsoluteLeft() - dragOffsetX, event.getY() + getAbsoluteTop() - dragOffsetY);
+			event.preventDefault();
+		}
+	}
 
-    public void onUpdate(Note note) {
-        if (!this.note.hasImage())
-            uploader.setVisible(true);
-        render();
-    }
+	public void onMouseUp(MouseUpEvent event) {
+		if (dragging) {
+			dragging = false;
+			DOM.releaseCapture(getElement());
+			event.preventDefault();
+			model.updateNotePosition(note, getAbsoluteLeft(), getAbsoluteTop(), note.getWidth(), note.getHeight());
+		}
+	}
 
-    public void onNoteKeySuccessfullySet(Note note) {
-        uploaderNoteKey.setValue(note.getKey());
-        uploader.setVisible(true);
-        render();
-    }
+	public void onUpdate(Note note) {
+		if (!this.note.hasImage())
+			uploader.setVisible(true);
+		render();
+	}
 
-    public void onImageUpdate(Note note) {
-        image.setUrl(note.getImageUrl());
-        render();
-    }
+	public void onNoteKeySuccessfullySet(Note note) {
+		uploaderNoteKey.setValue(note.getKey());
+		uploader.setVisible(true);
+		render();
+	}
 
-    public void onValueChange(ValueChangeEvent<String> event) {
-        model.updateNoteContent(note, event.getValue());
-    }
+	public void onImageUpdate(Note note) {
+		image.setUrl(note.getImageUrl());
+		render();
+	}
 
-    public void setPixelPosition(int x, int y) {
-        final Style style = getElement().getStyle();
-        style.setPropertyPx("left", x);
-        style.setPropertyPx("top", y);
-    }
+	public void onValueChange(ValueChangeEvent<String> event) {
+		model.updateNoteContent(note, event.getValue());
+	}
 
-    public void setPixelSize(int width, int height) {
-        content.setPixelSize(width, height);
-    }
+	public void setPixelPosition(int x, int y) {
+		final Style style = getElement().getStyle();
+		style.setPropertyPx("left", x);
+		style.setPropertyPx("top", y);
+	}
 
-    private void render() {
-        setPixelPosition(note.getX(), note.getY());
+	public void setPixelSize(int width, int height) {
+	}
 
-        setPixelSize(note.getWidth(), note.getHeight());
+	private void render() {
+		setPixelPosition(note.getX(), note.getY());
+		setPixelSize(note.getWidth(), note.getHeight());
+		titleElement.setInnerHTML(note.getAuthorName());
+		comments.setRowCount(note.getComments().length, true);
+		comments.setRowData(0, Arrays.asList(note.getComments()));
+		comments.redraw();
+	}
 
-        titleElement.setInnerHTML(note.getAuthorName());
+	public void select(int zIndex) {
+		getElement().getStyle().setProperty("zIndex", "" + zIndex);
+	}
 
-        final String noteContent = note.getContent();
-        content.setText((noteContent == null) ? "" : noteContent);
-        content.setReadOnly(!note.isOwnedByCurrentUser());
+	/**
+	 * Called by the uploader, when the upload is finished.
+	 */
+	@Override
+	public void onFinish(IUploader val) {
+		uploader.setVisible(false);
+		rotateButton.setVisible(true);
+		model.getImageUrlForNote(note);
+	}
 
-        comments.setRowCount(note.getComments().length, true);
-        comments.setRowData(0, Arrays.asList(note.getComments()));
-        comments.redraw();
-    }
+	@Override
+	public void onResponse(boolean success) {
+		model.getImageUrlForNote(note);
+	}
 
-    public void select(int zIndex) {
-        getElement().getStyle().setProperty("zIndex", "" + zIndex);
-    }
-
-    /**
-     * Called by the uploader, when the upload is finished.
-     */
-    @Override
-    public void onFinish(IUploader val) {
-        uploader.setVisible(false);
-        rotateButton.setVisible(true);
-        model.getImageUrlForNote(note);
-    }
-
-    @Override
-    public void onResponse(boolean success) {
-        model.getImageUrlForNote(note);
-    }
-
-    private void forceImageReload() {
-        image.setUrl(image.getUrl() + "=reload=" + Math.random());
-        render();
-    }
+	private void forceImageReload() {
+		image.setUrl(image.getUrl() + "=reload=" + Math.random());
+		render();
+	}
 }

@@ -1,13 +1,16 @@
 package com.google.appengine.demos.sticky.server;
 
+import gwtupload.server.exceptions.UploadActionException;
+import gwtupload.server.gae.AppEngineUploadAction;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.jdo.Transaction;
+import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.fileupload.FileItem;
 import org.slf4j.Logger;
@@ -15,13 +18,15 @@ import org.slf4j.LoggerFactory;
 
 import com.google.appengine.api.datastore.Blob;
 import com.google.appengine.api.datastore.KeyFactory;
+import com.google.appengine.api.images.Image;
+import com.google.appengine.api.images.ImagesService;
+import com.google.appengine.api.images.ImagesService.OutputEncoding;
+import com.google.appengine.api.images.ImagesServiceFactory;
+import com.google.appengine.api.images.Transform;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.google.appengine.demos.sticky.server.Store.Author;
 import com.google.appengine.demos.sticky.server.Store.Note;
-
-import gwtupload.server.exceptions.UploadActionException;
-import gwtupload.server.gae.AppEngineUploadAction;
 
 @SuppressWarnings("serial")
 public class ImageUploadServlet extends AppEngineUploadAction {
@@ -110,7 +115,12 @@ public class ImageUploadServlet extends AppEngineUploadAction {
                 return false;
             }
 			
-			note.setImageData(new Blob(bytes));
+			Transform resize = ImagesServiceFactory.makeResize(400, 400);
+			ImagesService imagesService = ImagesServiceFactory.getImagesService();
+			Image oldImage = ImagesServiceFactory.makeImage(bytes);
+			Image newImage = imagesService.applyTransform(resize, oldImage, OutputEncoding.JPEG);
+			note.setImageData(new Blob(newImage.getImageData()));
+			
 			note.setContentType(contentType);
 			api.saveNote(note);
 			tx.commit();

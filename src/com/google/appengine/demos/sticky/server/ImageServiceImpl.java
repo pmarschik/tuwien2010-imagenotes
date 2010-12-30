@@ -46,9 +46,7 @@ public class ImageServiceImpl extends RemoteServiceServlet implements ImageServi
 		Image oldImage = ImagesServiceFactory.makeImage(note.getImageData().getBytes());
 
 		Image newImage = imagesService.applyTransform(resize, oldImage, OutputEncoding.valueOf(oldImage.getFormat().name()));
-		newImage = resizeIfImageToBig(imagesService, oldImage, newImage);
 		note.setImageData(new Blob(newImage.getImageData()));
-
 		saveNote(note);
 	}
 
@@ -72,28 +70,11 @@ public class ImageServiceImpl extends RemoteServiceServlet implements ImageServi
 		Image oldImage = ImagesServiceFactory.makeImage(note.getImageData().getBytes());
 
 		Image newImage = imagesService.applyTransform(flip, oldImage, OutputEncoding.valueOf(oldImage.getFormat().name()));
-		newImage = resizeIfImageToBig(imagesService, oldImage, newImage);
 		note.setImageData(new Blob(newImage.getImageData()));
 
 		saveNote(note);
 	}
 
-	private Image resizeIfImageToBig(ImagesService imagesService, Image oldImage, Image newImage) {
-		log.debug("converted image size in Kb: " + newImage.getImageData().length / 1024);
-		if (newImage.getImageData().length / 1024 >= 1024) {
-			log.debug(String.format("image after image manipulation %s x %s", newImage.getWidth(), newImage.getHeight()));
-			int newWidth = (int) ((double) newImage.getWidth() * 1024d / (double) (newImage.getImageData().length / 1024d) * 0.8d);
-			int newHeigth = (int) ((double) newImage.getHeight() * 1024d / (double) (newImage.getImageData().length / 1024d) * 0.8d);
-			
-			log.debug("converted image > 1024kB. trying to resize...");
-			Transform resize = ImagesServiceFactory.makeResize(newWidth, newHeigth);
-			newImage = imagesService.applyTransform(resize, newImage, OutputEncoding.valueOf(oldImage.getFormat().name()));
-
-			log.debug(String.format("image after resizing %s x %s", newImage.getWidth(), newImage.getHeight()));
-			log.debug("new size after resizing: " + newImage.getImageData().length / 1024);
-		}
-		return newImage;
-	}
 
 	private void saveNote(Note note) {
 		JDOHelper.getPersistenceManager(note).currentTransaction().begin();
