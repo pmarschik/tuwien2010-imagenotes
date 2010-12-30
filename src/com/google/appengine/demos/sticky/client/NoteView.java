@@ -1,25 +1,47 @@
 package com.google.appengine.demos.sticky.client;
 
-import com.google.appengine.demos.sticky.client.model.*;
+import gwtupload.client.IUploader;
+import gwtupload.client.SingleUploader;
+
+import java.util.Arrays;
+
+import com.google.appengine.demos.sticky.client.model.Comment;
+import com.google.appengine.demos.sticky.client.model.ImageService;
+import com.google.appengine.demos.sticky.client.model.ImageServiceAsync;
+import com.google.appengine.demos.sticky.client.model.Model;
+import com.google.appengine.demos.sticky.client.model.Note;
 import com.google.gwt.cell.client.AbstractCell;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.Style;
-import com.google.gwt.event.dom.client.*;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.MouseDownEvent;
+import com.google.gwt.event.dom.client.MouseDownHandler;
+import com.google.gwt.event.dom.client.MouseMoveEvent;
+import com.google.gwt.event.dom.client.MouseMoveHandler;
+import com.google.gwt.event.dom.client.MouseUpEvent;
+import com.google.gwt.event.dom.client.MouseUpHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.cellview.client.CellList;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.*;
-import gwtupload.client.IUploader;
-import gwtupload.client.SingleUploader;
-
-import java.util.Arrays;
+import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.DisclosurePanel;
+import com.google.gwt.user.client.ui.Hidden;
+import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Image;
+import com.google.gwt.user.client.ui.Panel;
+import com.google.gwt.user.client.ui.PopupPanel;
+import com.google.gwt.user.client.ui.SimplePanel;
+import com.google.gwt.user.client.ui.TextArea;
+import com.google.gwt.user.client.ui.VerticalPanel;
 
 /* Copyright (c) 2009 Google Inc.
 
@@ -55,7 +77,8 @@ class NoteView extends SimplePanel implements Note.Observer, MouseUpHandler,
             .create(ImageService.class);
     private final TextArea content = new TextArea();
 
-    private Image image = new Image();
+    private static Image image = new Image();
+    private static Image popupImage;
     private SingleUploader uploader = new SingleUploader();
     private Hidden uploaderNoteKey = new Hidden("noteKey");
     private Button rotateButton = new Button("Rotate");
@@ -81,6 +104,23 @@ class NoteView extends SimplePanel implements Note.Observer, MouseUpHandler,
             sb.appendEscaped(value.getContent());
         }
     }
+    
+    private static class ImagePopUp extends PopupPanel{
+    	
+    	public ImagePopUp() {
+			super(true);
+			if (popupImage==null) {
+				popupImage= new Image();
+				popupImage.setHeight(String.valueOf(Window.getClientHeight()-200) + "px");
+			}
+
+    		popupImage.setUrl(image.getUrl()+ "=reload=" + Math.random());
+			popupImage.getElement().getStyle().setProperty("zIndex", "" + "99999999999");
+			popupImage.getElement().getStyle().setProperty("position", "relative");
+			
+    		setWidget(popupImage);
+		}
+    }
 
     /**
      * @param note the note to render
@@ -90,6 +130,20 @@ class NoteView extends SimplePanel implements Note.Observer, MouseUpHandler,
         this.model = model;
         this.note = note;
         image.setSize("200px", "200px");
+        image.addClickHandler(new ClickHandler() {
+			
+			@Override
+			public void onClick(ClickEvent event) {
+				 final ImagePopUp popup = new ImagePopUp();
+			        popup.setPopupPositionAndShow(new PopupPanel.PositionCallback() {
+			          public void setPosition(int offsetWidth, int offsetHeight) {
+			            int left = (Window.getClientWidth() - offsetWidth) / 3;
+			            int top = (Window.getClientHeight() - offsetHeight) / 3;
+			            popup.setPopupPosition(left, top);
+			          }
+			        });
+			}
+		});
         setStyleName("note");
         note.setObserver(this);
 
