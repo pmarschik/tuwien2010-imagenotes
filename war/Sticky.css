@@ -256,7 +256,7 @@ width: 508px;
 	width: 225px;
 }
 	
-textarea {
+.comtextarea {
 	margin-left: auto;
     margin-right: auto;
 	width: 225px;
@@ -269,5 +269,5 @@ textarea {
 	width: 225px;
 }
 .upload{
-	width: 150px;
+	padding: 5px;
 }

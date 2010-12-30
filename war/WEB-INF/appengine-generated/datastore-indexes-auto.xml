@@ -1,13 +1,13 @@
-<!-- Indices written at Thu, 30 Dec 2010 19:37:49 UTC -->
+<!-- Indices written at Thu, 30 Dec 2010 20:22:29 UTC -->
 
 <datastore-indexes>
 
-    <!-- Used 20 times in query history -->
+    <!-- Used 8 times in query history -->
     <datastore-index kind="Store$Note" ancestor="true" source="auto">
         <property name="notes_INTEGER_IDX" direction="asc"/>
     </datastore-index>
 
-    <!-- Used 38 times in query history -->
+    <!-- Used 7 times in query history -->
     <datastore-index kind="Store$Comment" ancestor="true" source="auto">
         <property name="comments_INTEGER_IDX" direction="asc"/>
     </datastore-index>

@@ -36,6 +36,7 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DisclosurePanel;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.Hidden;
+import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.PopupPanel;
@@ -78,9 +79,9 @@ class NoteView extends SimplePanel implements Note.Observer, MouseUpHandler, Mou
 	private SingleUploader uploader = new SingleUploader();
 	private Hidden uploaderNoteKey = new Hidden("noteKey");
 	private Button rotateButton = new Button("Rotate");
-	private Button flipHButton = new Button("Flip Horizontally");
-	private Button flipVButton = new Button("Flip Vertically");
-	private Button deletNoteButton = new Button("Delete Note");
+	private Button flipHButton = new Button("Flip H");
+	private Button flipVButton = new Button("Flip V");
+	private Button deletNoteButton = new Button("Remove Note");
 
 	private final CellList<Comment> comments = new CellList<Comment>(new CommentCell());
 	private Button newCommentButton = new Button("Add Comment");
@@ -150,9 +151,14 @@ class NoteView extends SimplePanel implements Note.Observer, MouseUpHandler, Mou
 		elem.getStyle().setProperty("position", "absolute");
 		titleElement = elem.appendChild(Document.get().createDivElement());
 		titleElement.setClassName("note-title");
+		
 		VerticalPanel mainPanel = new VerticalPanel();
-
-		uploader.setStyleName("upload");
+		if (note.isOwnedByCurrentUser()) {
+			HorizontalPanel panel=new HorizontalPanel();
+			panel.setStyleName("actions");
+			panel.add(deletNoteButton);
+			mainPanel.add(panel);
+		}
 		mainPanel.add(image);
 
 		if (!note.hasImage()) {
@@ -180,6 +186,7 @@ class NoteView extends SimplePanel implements Note.Observer, MouseUpHandler, Mou
 		VerticalPanel commentsPanel = new VerticalPanel();
 		commentsPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 		commentPanel.setStyleName("commentpanel");
+		newCommentContent.setStyleName("comtextarea");
 		commentPanel.setContent(commentsPanel);
 		commentsPanel.add(comments);
 		commentsPanel.add(newCommentContent);
@@ -204,6 +211,8 @@ class NoteView extends SimplePanel implements Note.Observer, MouseUpHandler, Mou
 		uploader.setServletPath("/sticky/imageUpload");
 		uploader.addOnFinishUploadHandler(this);
 		uploader.setVisible(!note.hasImage());
+		uploader.setStyleName("upload");
+		uploader.setFileInputSize(17);
 		uploaderNoteKey.setValue(note.getKey());
 
 		deletNoteButton.addClickHandler(new ClickHandler() {
@@ -240,14 +249,12 @@ class NoteView extends SimplePanel implements Note.Observer, MouseUpHandler, Mou
 			}
 		});
 
-		VerticalPanel horizontalPanel = new VerticalPanel();
+		HorizontalPanel horizontalPanel = new HorizontalPanel();
 		horizontalPanel.setStyleName("actions");
-
-		horizontalPanel.add(rotateButton);
 		horizontalPanel.add(flipHButton);
 		horizontalPanel.add(flipVButton);
-		horizontalPanel.add(deletNoteButton);
-
+		horizontalPanel.add(rotateButton);
+		
 		return horizontalPanel;
 	}
 
